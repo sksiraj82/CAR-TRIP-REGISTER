@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1A0533">
+<title>CAR TRIP REGISTER</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0F0A1E;
+  --card:#1C1433;
+  --card2:#221A40;
+  --border:#2E2550;
+  --purple:#7C3AED;
+  --purple2:#9D5FF5;
+  --pink:#EC4899;
+  --cyan:#06B6D4;
+  --green:#10B981;
+  --orange:#F97316;
+  --red:#EF4444;
+  --yellow:#F59E0B;
+  --text:#F1F0FF;
+  --muted:#9B93C4;
+  --input-bg:#160F2D;
+  --grad:linear-gradient(135deg,#7C3AED,#EC4899);
+  --grad2:linear-gradient(135deg,#06B6D4,#7C3AED);
+  --grad3:linear-gradient(135deg,#10B981,#06B6D4);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--purple);border-radius:4px;}
+
+/* PIN LOCK SCREEN */
+.pin-screen{position:fixed;inset:0;background:linear-gradient(160deg,#1A0533 0%,#0D1B4B 60%,#0A1A0A 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:30px 20px;}
+.pin-screen.hidden{display:none;}
+.pin-logo{font-size:64px;margin-bottom:16px;filter:drop-shadow(0 0 24px #7C3AED);}
+.pin-app-name{font-size:11px;font-weight:800;letter-spacing:4px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.pin-title{font-size:24px;font-weight:900;color:#fff;letter-spacing:1px;margin-bottom:4px;}
+.pin-sub{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:36px;}
+.pin-dots{display:flex;gap:16px;margin-bottom:36px;}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid rgba(124,58,237,0.6);background:transparent;transition:all 0.2s;}
+.pin-dot.filled{background:linear-gradient(135deg,#7C3AED,#EC4899);border-color:transparent;box-shadow:0 0 12px rgba(124,58,237,0.7);}
+.pin-dot.shake{animation:pinShake 0.4s ease;}
+@keyframes pinShake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-6px);}40%,80%{transform:translateX(6px);}}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:290px;}
+.pin-btn{padding:20px 10px;border-radius:18px;border:1px solid rgba(124,58,237,0.25);background:rgba(124,58,237,0.1);color:#fff;font-size:24px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;letter-spacing:1px;}
+.pin-btn:active{background:rgba(124,58,237,0.4);transform:scale(0.95);}
+.pin-btn.del{font-size:20px;color:var(--pink);}
+.pin-btn.empty{opacity:0;pointer-events:none;}
+.pin-err{color:var(--red);font-size:12px;font-weight:700;margin-top:16px;letter-spacing:1px;min-height:18px;}
+.pin-forgot{color:var(--purple2);font-size:12px;margin-top:24px;cursor:pointer;text-decoration:underline;opacity:0.8;}
+.pin-setup-note{color:var(--muted);font-size:11px;margin-top:12px;text-align:center;line-height:1.5;}
+
+/* LOGOUT BUTTON IN HEADER */
+.logout-btn{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#EF4444;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;letter-spacing:0.5px;font-family:inherit;}
+
+/* HEADER */
+.header{background:linear-gradient(160deg,#1A0533 0%,#0D1B4B 100%);padding:14px 18px 18px;position:sticky;top:0;z-index:100;border-bottom:1px solid var(--border);}
+.status-bar{display:flex;justify-content:flex-end;margin-bottom:10px;}
+.status-time{color:var(--muted);font-size:11px;letter-spacing:1px;}
+.header-inner{display:flex;align-items:flex-start;justify-content:space-between;}
+.header-left{flex:1;}
+.back-btn{background:none;border:none;color:var(--purple2);font-size:20px;cursor:pointer;padding:2px 8px 2px 0;line-height:1;}
+.eyebrow{font-size:9px;letter-spacing:3px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.header-title{font-size:19px;font-weight:900;color:var(--text);letter-spacing:0.5px;margin-top:3px;}
+.header-right{text-align:right;}
+.hstat-label{color:var(--muted);font-size:9px;letter-spacing:1px;}
+.hstat-val{font-size:26px;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#160F2D;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;z-index:100;padding-bottom:env(safe-area-inset-bottom);}
+.nav-btn{display:flex;flex-direction:column;align-items:center;padding:10px 0;border:none;background:none;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:0.5px;cursor:pointer;gap:4px;font-family:inherit;}
+.nav-btn.active{color:var(--purple2);}
+.nav-btn .nav-icon{font-size:20px;}
+.nav-btn.active .nav-icon{filter:drop-shadow(0 0 6px #9D5FF5);}
+
+/* PAGES */
+.page{display:none;padding:14px 14px 110px;}
+.page.active{display:block;}
+
+/* MONTH SELECTOR */
+.month-bar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:14px;padding:12px 16px;margin-bottom:14px;border:1px solid var(--border);}
+.month-nav{background:none;border:none;color:var(--purple2);font-size:22px;cursor:pointer;padding:0 6px;line-height:1;}
+.month-label{font-weight:800;font-size:16px;color:var(--text);letter-spacing:0.5px;}
+.month-year{font-size:11px;color:var(--muted);text-align:center;margin-top:2px;}
+
+/* SUMMARY STRIP */
+.summary-strip{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.scard{background:var(--card);border-radius:14px;padding:14px 12px;border:1px solid var(--border);position:relative;overflow:hidden;}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.scard.c1::before{background:var(--grad);}
+.scard.c2::before{background:linear-gradient(90deg,var(--orange),var(--yellow));}
+.scard.c3::before{background:linear-gradient(90deg,var(--cyan),var(--green));}
+.scard.c4::before{background:linear-gradient(90deg,var(--green),var(--cyan));}
+.scard-icon{font-size:18px;margin-bottom:5px;}
+.scard-label{color:var(--muted);font-size:9px;font-weight:700;letter-spacing:1.5px;}
+.scard-val{font-size:17px;font-weight:800;margin-top:3px;}
+.scard.c1 .scard-val{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.scard.c2 .scard-val{color:var(--orange);}
+.scard.c3 .scard-val{color:var(--cyan);}
+.scard.c4 .scard-val{color:var(--green);}
+
+/* TRIP CARDS */
+.trip-list{display:flex;flex-direction:column;gap:10px;}
+.trip-card{background:var(--card);border-radius:16px;padding:14px 14px;border:1px solid var(--border);cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s;}
+.trip-card:active{transform:scale(0.98);}
+.trip-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad);border-radius:3px 0 0 3px;}
+.trip-card-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.trip-card-left{flex:1;}
+.trip-meta{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.sl-badge{background:var(--grad);color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:800;letter-spacing:1px;}
+.trip-date{color:var(--muted);font-size:12px;}
+.trip-dest{font-weight:800;font-size:15px;color:var(--text);margin-bottom:7px;}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:3px;}
+.chip.green{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:var(--green);}
+.chip.orange{background:rgba(249,115,22,0.12);border-color:rgba(249,115,22,0.3);color:var(--orange);}
+.chip.purple{color:var(--purple2);}
+.card-actions{display:flex;flex-direction:column;gap:6px;margin-left:10px;}
+.icon-btn{width:34px;height:34px;border-radius:10px;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.15s;}
+.icon-btn:active{opacity:0.7;}
+
+/* EMPTY */
+.empty{text-align:center;padding:50px 20px;}
+.empty-icon{font-size:60px;margin-bottom:14px;filter:grayscale(0.3);}
+.empty-title{font-weight:800;font-size:14px;letter-spacing:1px;color:var(--muted);}
+.empty-sub{font-size:12px;margin-top:6px;color:#5A527A;}
+
+/* FORM */
+.form-card{background:var(--card);border-radius:20px;padding:18px 16px;border:1px solid var(--border);}
+.section-divider{font-size:9px;font-weight:800;letter-spacing:2px;color:var(--muted);margin:18px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.field-group{margin-bottom:14px;}
+.field-label{display:block;font-size:10px;font-weight:800;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;}
+.field-req{color:var(--pink);}
+.field-input{width:100%;padding:13px 14px;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:inherit;color:var(--text);outline:none;transition:border 0.2s;}
+.field-input:focus{border-color:var(--purple);}
+.field-input.err{border-color:var(--red);background:rgba(239,68,68,0.08);}
+.field-input::placeholder{color:#4A4270;}
+input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
+.field-error{color:var(--red);font-size:11px;margin-top:4px;font-weight:600;}
+
+/* CALC PREVIEW */
+.calc-box{background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+.calc-title{font-size:9px;font-weight:800;letter-spacing:2px;color:var(--purple2);margin-bottom:10px;}
+.calc-row{display:flex;justify-content:space-between;padding:4px 0;}
+.calc-lbl{font-size:11px;font-weight:600;color:var(--muted);}
+.calc-val{font-size:14px;font-weight:800;color:var(--purple2);}
+.calc-val.grn{color:var(--green);}
+
+/* SAVE BTN */
+.save-btn{width:100%;padding:16px;border-radius:14px;border:none;background:var(--grad);color:#fff;font-weight:800;font-size:15px;letter-spacing:1.5px;cursor:pointer;font-family:inherit;box-shadow:0 4px 20px rgba(124,58,237,0.4);transition:opacity 0.15s;}
+.save-btn:active{opacity:0.85;}
+
+/* DETAIL */
+.detail-hero{background:linear-gradient(160deg,#1A0533,#0D1B4B);border-radius:20px;padding:20px 20px 18px;margin-bottom:12px;border:1px solid var(--border);}
+.detail-hero-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.detail-sl{background:var(--grad);color:#fff;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:800;}
+.detail-dt{color:var(--muted);font-size:12px;}
+.detail-dest{color:var(--text);font-weight:900;font-size:20px;margin-bottom:5px;}
+.detail-meta{color:var(--cyan);font-size:12px;}
+.detail-body{background:var(--card);border-radius:20px;padding:18px 18px;border:1px solid var(--border);}
+.det-section{margin-bottom:18px;}
+.det-sec-title{font-size:9px;font-weight:800;letter-spacing:2px;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.det-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;}
+.det-lbl{font-size:11px;font-weight:600;color:var(--muted);}
+.det-val{font-size:14px;font-weight:600;color:var(--text);}
+.det-val.bold{font-size:16px;font-weight:800;}
+.inhand-box{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;}
+.inhand-lbl{font-size:12px;font-weight:800;letter-spacing:1px;color:var(--green);}
+.inhand-val{font-size:22px;font-weight:900;color:var(--green);}
+.det-actions{display:flex;gap:10px;margin-top:6px;}
+.det-edit-btn{flex:1;padding:14px;border-radius:12px;border:1px solid var(--purple);background:rgba(124,58,237,0.12);color:var(--purple2);font-weight:800;font-size:13px;letter-spacing:1px;cursor:pointer;font-family:inherit;}
+.det-del-btn{flex:1;padding:14px;border-radius:12px;border:none;background:rgba(239,68,68,0.15);color:var(--red);font-weight:800;font-size:13px;letter-spacing:1px;cursor:pointer;font-family:inherit;}
+
+/* MONTHLY SUMMARY PAGE */
+.monthly-year-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.my-nav{background:none;border:none;color:var(--purple2);font-size:22px;cursor:pointer;padding:4px 8px;}
+.my-year{font-weight:800;font-size:18px;color:var(--text);}
+.month-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.month-tile{background:var(--card);border-radius:14px;padding:14px 12px;border:1px solid var(--border);cursor:pointer;transition:border-color 0.2s,transform 0.15s;position:relative;overflow:hidden;}
+.month-tile:active{transform:scale(0.97);}
+.month-tile.has-data{border-color:rgba(124,58,237,0.4);}
+.month-tile.has-data::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);}
+.month-tile-name{font-weight:800;font-size:14px;color:var(--text);margin-bottom:6px;}
+.month-tile-count{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:4px;}
+.month-tile-km{font-size:13px;font-weight:700;color:var(--purple2);}
+.month-tile-empty{font-size:11px;color:#3E3660;font-weight:600;}
+.year-totals{background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--border);}
+.yt-title{font-size:9px;font-weight:800;letter-spacing:2px;color:var(--muted);margin-bottom:12px;}
+.yt-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.yt-row:last-child{border-bottom:none;}
+.yt-lbl{font-size:12px;color:var(--muted);font-weight:600;}
+.yt-val{font-size:14px;font-weight:800;color:var(--text);}
+
+/* TOAST */
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:700;letter-spacing:1px;z-index:999;white-space:nowrap;transition:opacity 0.3s,transform 0.3s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.hide{opacity:0;transform:translateX(-50%) translateY(-10px);pointer-events:none;}
+.toast.suc{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,0.4);}
+.toast.err{background:var(--red);color:#fff;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9000;}
+.modal-ov.hidden{display:none;}
+.modal-box{background:#1C1433;border-radius:20px;padding:28px;width:290px;text-align:center;border:1px solid var(--border);}
+.modal-ico{font-size:40px;margin-bottom:12px;}
+.modal-ttl{font-weight:800;font-size:16px;color:var(--text);margin-bottom:8px;}
+.modal-sub{color:var(--muted);font-size:13px;margin-bottom:24px;}
+.modal-acts{display:flex;gap:12px;}
+.modal-cancel{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;}
+.modal-confirm{flex:1;padding:12px;border-radius:12px;border:none;background:var(--red);color:#fff;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;}
+
+/* SEARCH BAR */
+.search-bar{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:14px;gap:8px;}
+.search-icon{font-size:16px;color:var(--muted);}
+.search-input{flex:1;background:none;border:none;outline:none;font-size:14px;color:var(--text);font-family:inherit;}
+.search-input::placeholder{color:#4A4270;}
+
+
+/* MULTI-CAR GARAGE */
+.garage-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0F0A1E,#1A0533);display:flex;flex-direction:column;z-index:500;overflow-y:auto;}
+.garage-screen.hidden{display:none;}
+.garage-header{background:linear-gradient(135deg,#1A0533,#0D1B4B);padding:20px 18px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;}
+.garage-title-row{display:flex;align-items:center;justify-content:space-between;}
+.garage-eyebrow{font-size:9px;letter-spacing:3px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.garage-title{font-size:22px;font-weight:900;color:#fff;letter-spacing:1px;margin-top:3px;}
+.garage-body{padding:16px;}
+.car-slot{background:var(--card);border-radius:18px;border:1px solid var(--border);padding:16px;margin-bottom:12px;cursor:pointer;position:relative;overflow:hidden;transition:transform 0.15s,border-color 0.2s;}
+.car-slot:active{transform:scale(0.98);}
+.car-slot.selected{border-color:rgba(124,58,237,0.7);}
+.car-slot.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);}
+.car-slot-inner{display:flex;align-items:center;gap:14px;}
+.car-slot-icon{width:52px;height:52px;border-radius:14px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;}
+.car-slot-icon img{width:100%;height:100%;object-fit:cover;}
+.car-slot-info{flex:1;}
+.car-slot-name{font-size:16px;font-weight:800;color:var(--text);}
+.car-slot-plate{font-size:11px;color:var(--muted);margin-top:3px;font-family:monospace;letter-spacing:1px;}
+.car-slot-stats{display:flex;gap:10px;margin-top:6px;}
+.car-slot-stat{font-size:10px;color:var(--purple2);font-weight:700;}
+.car-slot-actions{display:flex;flex-direction:column;gap:6px;}
+.active-badge{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:20px;padding:2px 8px;font-size:9px;font-weight:800;color:var(--green);letter-spacing:0.5px;}
+.add-car-btn{width:100%;padding:16px;border-radius:16px;border:2px dashed rgba(124,58,237,0.4);background:rgba(124,58,237,0.06);color:var(--purple2);font-weight:800;font-size:14px;letter-spacing:1px;cursor:pointer;font-family:inherit;margin-top:4px;transition:background 0.2s;}
+.add-car-btn:active{background:rgba(124,58,237,0.15);}
+
+/* EXIT MODAL */
+.exit-modal{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:flex-end;justify-content:center;z-index:9000;}
+.exit-modal.hidden{display:none;}
+.exit-sheet{background:#1C1433;border-radius:24px 24px 0 0;padding:28px 20px 36px;width:100%;max-width:430px;border-top:1px solid var(--border);}
+.exit-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px;}
+.exit-title{font-size:18px;font-weight:900;color:var(--text);text-align:center;margin-bottom:6px;}
+.exit-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;}
+.exit-options{display:flex;flex-direction:column;gap:10px;}
+.exit-opt{width:100%;padding:15px;border-radius:14px;border:none;font-weight:800;font-size:14px;letter-spacing:1px;cursor:pointer;font-family:inherit;transition:opacity 0.15s;}
+.exit-opt:active{opacity:0.8;}
+
+/* GLOWING DOT PULSE (FAB) */
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(124,58,237,0.5);}100%{box-shadow:0 0 0 14px rgba(124,58,237,0);}}
+.fab{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:26px;border:none;background:var(--grad);color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;box-shadow:0 4px 20px rgba(124,58,237,0.5);animation:pulse-ring 2s infinite;font-family:inherit;}
+
+/* CAR PROFILE CARD */
+@keyframes carSlide{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+.car-profile-card{background:linear-gradient(135deg,#1A0533 0%,#0D1B4B 60%,#0A2A1A 100%);border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-bottom:14px;position:relative;}
+.car-profile-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 50%,rgba(124,58,237,0.15),transparent 70%);pointer-events:none;}
+.car-top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;}
+.car-brand{display:flex;flex-direction:column;}
+.car-brand-eye{font-size:8px;font-weight:700;letter-spacing:3px;color:var(--muted);}
+.car-brand-name{font-size:11px;font-weight:800;letter-spacing:1px;color:var(--cyan);}
+.car-model{font-size:20px;font-weight:900;color:var(--text);letter-spacing:0.5px;margin-top:1px;}
+.car-badge-row{display:flex;gap:6px;margin-top:6px;}
+.car-badge{background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.35);border-radius:20px;padding:2px 8px;font-size:9px;font-weight:700;color:var(--purple2);letter-spacing:0.5px;}
+.car-badge.grn{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:var(--green);}
+.car-img-wrap{position:relative;height:140px;overflow:hidden;}
+.car-img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;animation:carSlide 0.6s ease-out;}
+.car-img-overlay{position:absolute;inset:0;background:linear-gradient(to right,#1A0533 0%,transparent 30%,transparent 70%,#0A2A1A 100%);}
+.car-img-overlay2{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to top,#0F0A1E,transparent);}
+.car-plate-strip{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 12px;}
+.car-plate{background:#fff;border-radius:6px;padding:4px 12px;font-size:13px;font-weight:900;color:#111;letter-spacing:2px;border:2px solid #ddd;font-family:monospace;}
+.car-plate-label{font-size:9px;color:var(--muted);font-weight:600;letter-spacing:1px;}
+.car-status{display:flex;align-items:center;gap:5px;}
+.car-status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+.car-status-text{font-size:10px;font-weight:700;color:var(--green);letter-spacing:0.5px;}
+</style>
+</head>
+<body>
+
+<!-- ══ PIN LOCK SCREEN ══ -->
+<div class="pin-screen" id="pinScreen">
+  <div class="pin-logo" style="font-size:64px;margin-bottom:16px;">&#128663;</div>
+  <div class="pin-app-name">FLEET MANAGEMENT</div>
+  <div class="pin-title">CAR TRIP REGISTER</div>
+  <div class="pin-sub" id="pinSubText">ENTER YOUR PIN</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn empty"></button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-err" id="pinErr"></div>
+  <div class="pin-forgot" onclick="pinForgot()" id="pinForgotBtn" style="display:none">FORGOT PIN? RESET APP</div>
+  <div class="pin-setup-note" id="pinSetupNote" style="display:none">🔒 FIRST TIME SETUP<br>ENTER A 4-DIGIT PIN TO SECURE YOUR APP</div>
+</div>
+
+
+<!-- ══ GARAGE SCREEN (MULTI-CAR SELECTOR) ══ -->
+<div class="garage-screen hidden" id="garageScreen">
+  <div class="garage-header">
+    <div class="garage-title-row">
+      <div>
+        <div class="garage-eyebrow">FLEET MANAGEMENT</div>
+        <div class="garage-title">MY GARAGE</div>
+      </div>
+      <button onclick="closeGarage()" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);color:#9D5FF5;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">X CLOSE</button>
+    </div>
+  </div>
+  <div class="garage-body">
+    <div id="carSlotList"></div>
+    <button class="add-car-btn" onclick="addNewCar()">+ ADD NEW CAR</button>
+    <div style="margin-top:20px;padding:14px;background:rgba(124,58,237,0.08);border-radius:12px;border:1px solid rgba(124,58,237,0.2);">
+      <div style="font-size:9px;font-weight:800;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">HOW TO USE</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.6;">TAP ANY CAR TO SWITCH AND VIEW ITS TRIPS.<br>EACH CAR HAS ITS OWN SEPARATE TRIP RECORDS.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXIT MODAL ══ -->
+<div class="exit-modal hidden" id="exitModal">
+  <div class="exit-sheet">
+    <div class="exit-handle"></div>
+    <div class="exit-title">EXIT APP?</div>
+    <div class="exit-sub">WHAT WOULD YOU LIKE TO DO?</div>
+    <div class="exit-options">
+      <button class="exit-opt" style="background:rgba(239,68,68,0.15);color:#EF4444;" onclick="lockAndExit()">LOCK &amp; EXIT</button>
+      <button class="exit-opt" style="background:var(--grad);color:#fff;" onclick="justExit()">JUST EXIT</button>
+      <button class="exit-opt" style="background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);" onclick="closeExitModal()">CANCEL - STAY IN APP</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAR EDIT MODAL (GLOBAL) -->
+<div class="modal-ov hidden" id="carEditModal">
+  <div class="modal-box" style="width:340px;max-height:90vh;overflow-y:auto;text-align:left;">
+    <div style="font-size:14px;font-weight:900;color:#F1F0FF;margin-bottom:16px;letter-spacing:1px;" id="carEditModalTitle">EDIT CAR PROFILE</div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">CAR COMPANY</label>
+      <input id="ce-company" type="text" placeholder="e.g. MARUTI, HYUNDAI, TATA..." style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;text-transform:uppercase;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">CAR MODEL NAME</label>
+      <input id="ce-model" type="text" placeholder="e.g. SWIFT, CRETA, NEXON..." style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;text-transform:uppercase;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">VEHICLE NUMBER</label>
+      <input id="ce-plate" type="text" placeholder="e.g. MH 01 AB 1234" style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;text-transform:uppercase;letter-spacing:2px;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">CAR TYPE</label>
+      <select id="ce-type" style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;">
+        <option>HATCHBACK</option><option>SEDAN</option><option>SUV</option>
+        <option>MPV</option><option>MUV</option><option>CROSSOVER</option><option>VAN</option><option>OTHER</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">SEATS</label>
+      <select id="ce-seats" style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;">
+        <option>4 SEATER</option><option>5 SEATER</option><option>6 SEATER</option>
+        <option>7 SEATER</option><option>8 SEATER</option><option>9 SEATER</option><option>10 SEATER</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">FUEL TYPE</label>
+      <select id="ce-fueltype" style="width:100%;padding:11px 12px;background:#160F2D;border:1.5px solid #2E2550;border-radius:9px;font-size:14px;color:#F1F0FF;outline:none;font-family:inherit;">
+        <option value="PETROL">PETROL</option>
+        <option value="DIESEL">DIESEL</option>
+        <option value="CNG">CNG</option>
+        <option value="CNG + PETROL">⛽CNG + PETROL (DUAL)</option>
+        <option value="PETROL + CNG">🔵PETROL + CNG (DUAL)</option>
+        <option value="ELECTRIC">ELECTRIC</option>
+        <option value="HYBRID">HYBRID</option>
+        <option value="LPG">LPG</option>
+        <option value="CNG + DIESEL">CNG + DIESEL (DUAL)</option>
+      </select>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:9px;font-weight:800;letter-spacing:1.5px;color:#9B93C4;margin-bottom:5px;">CAR PHOTO (OPTIONAL)</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button type="button" onclick="document.getElementById('ce-photo').click()" style="flex:1;padding:10px;border-radius:9px;border:1.5px dashed #7C3AED;background:rgba(124,58,237,0.1);color:#9D5FF5;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">CHOOSE PHOTO</button>
+        <button type="button" onclick="removeCarPhoto()" id="ce-remove-photo" style="display:none;padding:10px 14px;border-radius:9px;border:none;background:rgba(239,68,68,0.15);color:#EF4444;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;">✕ REMOVE</button>
+      </div>
+      <input id="ce-photo" type="file" accept="image/*" style="display:none;" onchange="previewCarPhoto(this)">
+      <div id="ce-photo-preview" style="display:none;border-radius:12px;overflow:hidden;height:110px;position:relative;border:1px solid #2E2550;">
+        <img id="ce-preview-img" style="width:100%;height:100%;object-fit:cover;" alt="preview">
+        <div style="position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;letter-spacing:0.5px;">✓ PHOTO SET</div>
+      </div>
+      <div id="ce-no-photo-msg" style="padding:12px;border-radius:10px;background:#160F2D;border:1px solid #2E2550;text-align:center;color:#4A4270;font-size:12px;font-weight:600;">NO PHOTO — TAP "CHOOSE PHOTO" TO ADD</div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeModal()" style="flex:1;padding:12px;border-radius:10px;border:1px solid #2E2550;background:#160F2D;color:#9B93C4;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">CANCEL</button>
+      <button onclick="saveCarProfile()" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">SAVE CAR</button>
+    </div>
+    <div id="ce-delete-wrap" style="display:none;margin-top:10px;">
+      <button onclick="deleteCurrentCar()" style="width:100%;padding:12px;border-radius:10px;border:none;background:rgba(239,68,68,0.15);color:#EF4444;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;">DELETE THIS CAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="header">
+  <div class="status-bar">
+    <span class="status-time" id="clockEl">9:41 AM</span>
+    <div style="display:flex;gap:8px;align-items:center;"><button onclick="openGarage()" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);color:#9D5FF5;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">GARAGE</button><button class="logout-btn" onclick="showExitModal()" title="EXIT APP">EXIT</button><button class="logout-btn" onclick="logoutApp()" title="LOCK">🔒</button></div>
+  </div>
+  <div class="header-inner">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" style="display:none" onclick="goBack()">&#8592;</button>
+      <div class="eyebrow" id="headerEye">FLEET MANAGEMENT</div>
+      <div class="header-title" id="headerTitle">CAR TRIP REGISTER</div>
+    </div>
+    <div class="header-right" id="headerRight">
+      <div class="hstat-label">TOTAL TRIPS</div>
+      <div class="hstat-val" id="tripCount">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hide" id="toast"></div>
+
+<!-- DELETE MODAL -->
+<div class="modal-ov hidden" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-ico" style="font-size:40px;margin-bottom:12px;">DEL</div>
+    <div class="modal-ttl">DELETE TRIP?</div>
+    <div class="modal-sub">This cannot be undone.</div>
+    <div class="modal-acts">
+      <button class="modal-cancel" onclick="closeDeleteModal()">CANCEL</button>
+      <button class="modal-confirm" onclick="confirmDelete()">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: LIST ══ -->
+<div class="page active" id="page-list">
+
+  <!-- CAR PROFILE CARD — EDITABLE -->
+  <div class="car-profile-card" id="carProfileCard">
+    <div class="car-top">
+      <div class="car-brand" style="flex:1">
+        <span class="car-brand-eye" id="disp-company">YOUR CAR</span>
+        <span class="car-model" id="disp-model" style="font-size:22px">TAP EDIT TO SET</span>
+        <div class="car-badge-row" id="disp-badges">
+          <span class="car-badge" id="disp-type">TYPE</span>
+          <span class="car-badge" id="disp-seats">SEATS</span>
+          <span class="car-badge" id="disp-fuel-type">FUEL</span>
+          <span class="car-badge grn">● ACTIVE</span>
+        </div>
+      </div>
+      <button onclick="openCarEdit()" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);color:#9D5FF5;border-radius:10px;padding:6px 12px;font-size:10px;font-weight:800;letter-spacing:1px;cursor:pointer;margin-left:8px;align-self:flex-start;margin-top:4px;font-family:inherit;">&#9998; EDIT</button>
+    </div>
+    <div class="car-img-wrap" id="carImgWrap">
+      <div id="carImgContainer" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A0533,#0D1B4B);">
+        <div style="text-align:center;color:#4A4270;">
+          <div style="font-size:48px;margin-bottom:8px;">🚗</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;">TAP EDIT TO ADD CAR PHOTO</div>
+        </div>
+      </div>
+      <div class="car-img-overlay"></div>
+      <div class="car-img-overlay2"></div>
+    </div>
+    <div class="car-plate-strip">
+      <div>
+        <div class="car-plate-label">VEHICLE NO.</div>
+        <div class="car-plate" id="carPlateDisplay" onclick="editPlate()">TAP TO SET</div>
+      </div>
+      <div class="car-status">
+        <div class="car-status-dot"></div>
+        <span class="car-status-text">ON ROAD</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="month-bar">
+    <button class="month-nav" onclick="changeMonth(-1)">&#8249;</button>
+    <div style="text-align:center">
+      <div class="month-label" id="monthLabel">JUNE</div>
+      <div class="month-year" id="monthYear">2026</div>
+    </div>
+    <button class="month-nav" onclick="changeMonth(1)">&#8250;</button>
+  </div>
+  <div class="summary-strip">
+    <div class="scard c1"><div class="scard-icon">KM</div><div class="scard-label">TOTAL KM</div><div class="scard-val" id="s-km">0 km</div></div>
+    <div class="scard c2"><div class="scard-icon">FUEL</div><div class="scard-label">FUEL SPENT</div><div class="scard-val" id="s-fuel">₹0</div></div>
+    <div class="scard c3"><div class="scard-icon">TOLL</div><div class="scard-label">TOLL PAID</div><div class="scard-val" id="s-toll">₹0</div></div>
+    <div class="scard c4"><div class="scard-icon">CASH</div><div class="scard-label">IN HAND</div><div class="scard-val" id="s-inhand">₹0</div></div>
+  </div>
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" id="searchInput" placeholder="SEARCH DESTINATION..." oninput="renderList()">
+  </div>
+  <div class="trip-list" id="tripList"></div>
+</div>
+
+<!-- ══ PAGE: FORM ══ -->
+<div class="page" id="page-form">
+  <div class="form-card">
+    <div class="section-divider">TRIP INFORMATION</div>
+    <div class="field-group">
+      <label class="field-label">DATE <span class="field-req">*</span></label>
+      <input class="field-input" type="date" id="f-date" oninput="clearE('date');calcPrev()">
+      <div class="field-error" id="e-date" style="display:none">⚠ Required</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">CAR METER READING (KM) <span class="field-req">*</span></label>
+      <input class="field-input" type="number" id="f-meter" placeholder="e.g. 45230" oninput="clearE('meter')">
+      <div class="field-error" id="e-meter" style="display:none">⚠ REQUIRED</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">WHERE TO GO <span class="field-req">*</span></label>
+      <input class="field-input" type="text" id="f-dest" placeholder="e.g. Mumbai → Pune" oninput="clearE('dest')">
+      <div class="field-error" id="e-dest" style="display:none">⚠ Required</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">DISTANCE (KM) <span class="field-req">*</span></label>
+      <input class="field-input" type="number" id="f-km" placeholder="e.g. 148" oninput="clearE('km');calcPrev()">
+      <div class="field-error" id="e-km" style="display:none">⚠ Required</div>
+    </div>
+    <div class="section-divider">RATE & CHARGES</div>
+    <div class="field-group">
+      <label class="field-label">RATE PER KM (₹)</label>
+      <input class="field-input" type="number" id="f-rate" placeholder="e.g. 12" oninput="calcPrev()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">TOLL (₹)</label>
+      <input class="field-input" type="number" id="f-toll" placeholder="e.g. 280" oninput="calcPrev()">
+    </div>
+    <div class="section-divider">EXPENSES</div>
+    <div class="field-group">
+      <label class="field-label">DRIVER EXPENSES (₹)</label>
+      <input class="field-input" type="number" id="f-driver" placeholder="e.g. 500" oninput="calcPrev()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">FUEL COST (₹)</label>
+      <input class="field-input" type="number" id="f-fuel" placeholder="e.g. 1200" oninput="calcPrev()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">OTHER EXPENSES (₹)</label>
+      <input class="field-input" type="number" id="f-other" placeholder="e.g. 150" oninput="calcPrev()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">REMARKS</label>
+      <input class="field-input" type="text" id="f-remarks" placeholder="Optional notes...">
+    </div>
+    <div class="calc-box" id="calcBox" style="display:none">
+      <div class="calc-title">LIVE CALCULATION PREVIEW</div>
+      <div class="calc-row"><span class="calc-lbl">TOTAL AMOUNT</span><span class="calc-val" id="pv-total">₹0</span></div>
+      <div class="calc-row"><span class="calc-lbl">TOTAL EXPENSES</span><span class="calc-val" id="pv-exp">₹0</span></div>
+      <div class="calc-row"><span class="calc-lbl">IN HAND AMOUNT</span><span class="calc-val grn" id="pv-inhand">₹0</span></div>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveTrip()">SAVE TRIP</button>
+  </div>
+</div>
+
+<!-- ══ PAGE: DETAIL ══ -->
+<div class="page" id="page-detail">
+  <div class="detail-hero">
+    <div class="detail-hero-row">
+      <span class="detail-sl" id="d-sl">#1</span>
+      <span class="detail-dt" id="d-dt"></span>
+    </div>
+    <div class="detail-dest" id="d-dest"></div>
+    <div class="detail-meta" id="d-meta"></div>
+  </div>
+  <div class="detail-body">
+    <div class="det-section">
+      <div class="det-sec-title">TRIP FINANCIALS</div>
+      <div class="det-row"><span class="det-lbl">RATE PER KM</span><span class="det-val" id="d-rate"></span></div>
+      <div class="det-row"><span class="det-lbl">TOLL</span><span class="det-val" id="d-toll2"></span></div>
+      <div class="det-row"><span class="det-lbl">TOTAL AMOUNT</span><span class="det-val bold" id="d-total"></span></div>
+    </div>
+    <div class="det-section">
+      <div class="det-sec-title">EXPENSES BREAKDOWN</div>
+      <div class="det-row"><span class="det-lbl">DRIVER EXPENSES</span><span class="det-val" id="d-driver"></span></div>
+      <div class="det-row"><span class="det-lbl">FUEL COST</span><span class="det-val" id="d-fuel2"></span></div>
+      <div class="det-row"><span class="det-lbl">OTHER EXPENSES</span><span class="det-val" id="d-other2"></span></div>
+    </div>
+    <div class="det-section">
+      <div class="det-sec-title">NET AMOUNT</div>
+      <div class="inhand-box">
+        <span class="inhand-lbl">IN HAND AMOUNT</span>
+        <span class="inhand-val" id="d-inhand"></span>
+      </div>
+    </div>
+    <div class="det-section" id="d-rem-sec" style="display:none">
+      <div class="det-sec-title">REMARKS</div>
+      <div class="det-row"><span class="det-val" id="d-rem" style="font-size:14px;color:var(--muted)"></span></div>
+    </div>
+    <div class="det-actions">
+      <button class="det-edit-btn" onclick="editCurrent()">EDIT</button>
+      <button class="det-del-btn" onclick="askDel()">DELETE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAGE: MONTHLY SUMMARY ══ -->
+<div class="page" id="page-monthly">
+  <div class="monthly-year-row">
+    <button class="my-nav" onclick="changeYear(-1)">&#8249;</button>
+    <span class="my-year" id="myYear">2026</span>
+    <button class="my-nav" onclick="changeYear(1)">&#8250;</button>
+  </div>
+  <div class="month-grid" id="monthGrid"></div>
+  <div class="year-totals">
+    <div class="yt-title">ANNUAL TOTALS</div>
+    <div class="yt-row"><span class="yt-lbl">Total Trips</span><span class="yt-val" id="yt-trips">0</span></div>
+    <div class="yt-row"><span class="yt-lbl">Total KM</span><span class="yt-val" id="yt-km">0 km</span></div>
+    <div class="yt-row"><span class="yt-lbl">Total Fuel Cost</span><span class="yt-val" id="yt-fuel">₹0</span></div>
+    <div class="yt-row"><span class="yt-lbl">Total Toll</span><span class="yt-val" id="yt-toll">₹0</span></div>
+    <div class="yt-row"><span class="yt-lbl">Total In Hand</span><span class="yt-val" style="color:var(--green)" id="yt-inhand">₹0</span></div>
+  </div>
+  <!-- PIN CONTROLS -->
+  <div style="display:flex;gap:10px;margin-top:14px;margin-bottom:20px;">
+    <button onclick="changePin()" style="flex:1;padding:14px;border-radius:14px;border:1px solid rgba(124,58,237,0.4);background:rgba(124,58,237,0.12);color:#9D5FF5;font-weight:800;font-size:13px;letter-spacing:1px;cursor:pointer;font-family:inherit;">CHANGE PIN</button>
+    <button onclick="logoutApp()" style="flex:1;padding:14px;border-radius:14px;border:none;background:rgba(239,68,68,0.15);color:#EF4444;font-weight:800;font-size:13px;letter-spacing:1px;cursor:pointer;font-family:inherit;">LOCK APP</button>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openAdd()">+</button>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-trips" onclick="navTo('list','TRIPS')">
+    <span class="nav-icon" style="font-size:20px;">&#128663;</span>TRIPS
+  </button>
+  <button class="nav-btn" id="nav-monthly" onclick="navTo('monthly','MONTHLY')">
+    <span class="nav-icon">CAL</span>MONTHLY
+  </button>
+  <button class="nav-btn" id="nav-add" onclick="openAdd()">
+    <span class="nav-icon">+</span>ADD TRIP
+  </button>
+  <button class="nav-btn" onclick="openGarage()">
+    <span class="nav-icon">CAR</span>GARAGE
+  </button>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+let trips = JSON.parse(localStorage.getItem('ctr_v2') || '[]');
+let sl = parseInt(localStorage.getItem('ctr_sl') || '1');
+const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+const MONTHS_SHORT = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+let curView = 'list';
+let viewMonth = new Date().getMonth();
+let viewYear = new Date().getFullYear();
+let summaryYear = new Date().getFullYear();
+let editId = null, delId = null, detId = null;
+
+// ── UTILS ─────────────────────────────────────────────────────
+const n = v => parseFloat(v)||0;
+const rs = v => v!==''&&v!=null ? '₹'+n(v).toFixed(2) : '—';
+const calcTotal = t => n(t.km)*n(t.rate)+n(t.toll);
+const calcExp = t => n(t.driver)+n(t.fuel)+n(t.other);
+const calcInHand = t => calcTotal(t)-calcExp(t);
+let persist = () => { persistActiveCarData(); }; // multi-car persist - overrideable
+const $ = id => document.getElementById(id);
+
+// ── CLOCK ─────────────────────────────────────────────────────
+function updateClock(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes(),ap=h>=12?'PM':'AM',hh=h%12||12;
+  $('clockEl').textContent=hh+':'+(m<10?'0':'')+m+' '+ap;
+}
+setInterval(updateClock,10000); updateClock();
+
+// ── TOAST ─────────────────────────────────────────────────────
+let tTimer;
+function toast(msg,type='suc'){
+  const t=$('toast'); t.textContent=msg; t.className='toast show '+type;
+  clearTimeout(tTimer); tTimer=setTimeout(()=>t.className='toast hide',2500);
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+function navTo(view, label){
+  ['trips','monthly'].forEach(k=>$('nav-'+k).classList.remove('active'));
+  if(view==='list') $('nav-trips').classList.add('active');
+  else if(view==='monthly') $('nav-monthly').classList.add('active');
+  editId=null;
+  showPage(view);
+  if(view==='list') renderList();
+  if(view==='monthly') renderMonthly();
+}
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  $('page-'+name).classList.add('active');
+  curView=name;
+  const isMain = name==='list'||name==='monthly';
+  $('fab').style.display = isMain?'flex':'none';
+  $('backBtn').style.display = isMain?'none':'block';
+  $('headerRight').style.display = name==='list'?'block':'none';
+  if(name==='list'){$('headerTitle').textContent='CAR TRIP REGISTER';$('headerEye').textContent='FLEET MANAGEMENT';}
+  if(name==='form'){$('headerTitle').textContent=editId?'EDIT TRIP':'NEW TRIP';$('headerEye').textContent='TRIP ENTRY';}
+  if(name==='detail'){$('headerTitle').textContent='TRIP DETAILS';$('headerEye').textContent='RECORD VIEW';}
+  if(name==='monthly'){$('headerTitle').textContent='MONTHLY SUMMARY';$('headerEye').textContent='ANALYTICS';}
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  editId=null;
+  if(curView==='form'||curView==='detail'){showPage('list');renderList();}
+  else if(curView==='monthly'){showPage('list');renderList();}
+}
+
+// ── MONTH NAV ─────────────────────────────────────────────────
+function changeMonth(d){
+  viewMonth+=d;
+  if(viewMonth<0){viewMonth=11;viewYear--;}
+  if(viewMonth>11){viewMonth=0;viewYear++;}
+  renderList();
+}
+function changeYear(d){ summaryYear+=d; renderMonthly(); }
+
+// ── LIST ──────────────────────────────────────────────────────
+function renderList(){
+  $('monthLabel').textContent=MONTHS[viewMonth];
+  $('monthYear').textContent=viewYear;
+  const q=($('searchInput').value||'').toLowerCase().trim();
+  let filtered=trips.filter(t=>{
+    const d=new Date(t.date);
+    const mMatch=d.getMonth()===viewMonth&&d.getFullYear()===viewYear;
+    const sMatch=!q||t.dest.toLowerCase().includes(q)||(t.remarks&&t.remarks.toLowerCase().includes(q));
+    return mMatch&&sMatch;
+  });
+  $('tripCount').textContent=trips.length;
+  const km=filtered.reduce((s,t)=>s+n(t.km),0);
+  const fuel=filtered.reduce((s,t)=>s+n(t.fuel),0);
+  const toll=filtered.reduce((s,t)=>s+n(t.toll),0);
+  const ih=filtered.reduce((s,t)=>s+calcInHand(t),0);
+  $('s-km').textContent=km.toFixed(0)+' km';
+  $('s-fuel').textContent='₹'+fuel.toFixed(2);
+  $('s-toll').textContent='₹'+toll.toFixed(2);
+  $('s-inhand').textContent='₹'+ih.toFixed(2);
+  const list=$('tripList');
+  if(!filtered.length){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">${q?'🔍':'🚗'}</div><div class="empty-title">${q?'NO MATCHING TRIPS':'NO TRIPS THIS MONTH'}</div><div class="empty-sub">${q?'Try a different search':'Tap + to add your first trip'}</div></div>`;
+    return;
+  }
+  list.innerHTML=filtered.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(t=>`
+    <div class="trip-card" onclick="openDetail(${t.id})">
+      <div class="trip-card-top">
+        <div class="trip-card-left">
+          <div class="trip-meta"><span class="sl-badge">#${t.sl}</span><span class="trip-date">${t.date}</span></div>
+          <div class="trip-dest">${t.dest}</div>
+          <div class="chip-row">
+            <span class="chip purple">${t.km} km</span>
+            <span class="chip orange">${rs(t.fuel)}</span>
+            <span class="chip green">${rs(calcInHand(t))}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="icon-btn" style="background:rgba(124,58,237,0.2)" onclick="event.stopPropagation();editTrip(${t.id})">✏️</button>
+          <button class="icon-btn" style="background:rgba(239,68,68,0.15)" onclick="event.stopPropagation();askDelById(${t.id})">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── MONTHLY SUMMARY ───────────────────────────────────────────
+function renderMonthly(){
+  $('myYear').textContent=summaryYear;
+  const yearTrips=trips.filter(t=>new Date(t.date).getFullYear()===summaryYear);
+  let html='';
+  for(let m=0;m<12;m++){
+    const mTrips=yearTrips.filter(t=>new Date(t.date).getMonth()===m);
+    const km=mTrips.reduce((s,t)=>s+n(t.km),0);
+    const hasDat=mTrips.length>0;
+    html+=`<div class="month-tile${hasDat?' has-data':''}" onclick="jumpToMonth(${m})">
+      <div class="month-tile-name">${MONTHS_SHORT[m]}</div>
+      ${hasDat?`<div class="month-tile-count">${mTrips.length} TRIP${mTrips.length>1?'S':''}</div><div class="month-tile-km">${km.toFixed(0)} km</div>`:`<div class="month-tile-empty">NO DATA</div>`}
+    </div>`;
+  }
+  $('monthGrid').innerHTML=html;
+  $('yt-trips').textContent=yearTrips.length;
+  $('yt-km').textContent=yearTrips.reduce((s,t)=>s+n(t.km),0).toFixed(0)+' km';
+  $('yt-fuel').textContent='₹'+yearTrips.reduce((s,t)=>s+n(t.fuel),0).toFixed(2);
+  $('yt-toll').textContent='₹'+yearTrips.reduce((s,t)=>s+n(t.toll),0).toFixed(2);
+  $('yt-inhand').textContent='₹'+yearTrips.reduce((s,t)=>s+calcInHand(t),0).toFixed(2);
+}
+
+function jumpToMonth(m){
+  viewMonth=m; viewYear=summaryYear;
+  navTo('list','TRIPS');
+}
+
+// ── FORM ──────────────────────────────────────────────────────
+function openAdd(){ editId=null; clearForm(); $('saveBtn').textContent='SAVE TRIP'; showPage('form'); }
+
+function clearForm(){
+  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>{
+    $('f-'+k).value='';
+    $('f-'+k).classList.remove('err');
+  });
+  ['date','meter','dest','km'].forEach(k=>{ $('e-'+k).style.display='none'; });
+  $('calcBox').style.display='none';
+}
+
+function clearE(k){ $('e-'+k).style.display='none'; $('f-'+k).classList.remove('err'); }
+
+function calcPrev(){
+  const km=n($('f-km').value),rate=n($('f-rate').value),toll=n($('f-toll').value);
+  const dr=n($('f-driver').value),fu=n($('f-fuel').value),ot=n($('f-other').value);
+  const any=km||rate||toll||dr||fu||ot;
+  const box=$('calcBox');
+  if(!any){box.style.display='none';return;}
+  box.style.display='block';
+  const total=km*rate+toll, exp=dr+fu+ot, ih=total-exp;
+  $('pv-total').textContent='₹'+total.toFixed(2);
+  $('pv-exp').textContent='₹'+exp.toFixed(2);
+  $('pv-inhand').textContent='₹'+ih.toFixed(2);
+}
+
+function validate(){
+  let ok=true;
+  // Check required fields
+  [['date','date'],['meter','meter'],['dest','dest'],['km','km']].forEach(([f,k])=>{
+    if(!$('f-'+f).value.trim()){$('e-'+k).style.display='block';$('f-'+f).classList.add('err');ok=false;}
+  });
+  if(!ok) return false;
+
+  // Meter reading must be greater than previous trip's meter reading
+  const newMeter = parseFloat($('f-meter').value);
+  if(!isNaN(newMeter) && trips.length > 0) {
+    // Get last trip meter reading (excluding current edit)
+    const otherTrips = editId ? trips.filter(t=>t.id!==editId) : trips;
+    if(otherTrips.length > 0) {
+      // Sort by date to find latest trip
+      const sorted = [...otherTrips].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      const lastMeter = parseFloat(sorted[0].meter);
+      if(!isNaN(lastMeter) && newMeter < lastMeter) {
+        $('e-meter').textContent = '⚠ METER READING MUST BE MORE THAN LAST ENTRY (' + lastMeter + ' KM)';
+        $('e-meter').style.display='block';
+        $('f-meter').classList.add('err');
+        ok=false;
+      } else if(!isNaN(lastMeter) && newMeter === lastMeter && !editId) {
+        $('e-meter').textContent = '⚠ METER READING SAME AS LAST ENTRY — PLEASE VERIFY';
+        $('e-meter').style.display='block';
+        $('f-meter').classList.add('err');
+        ok=false;
+      }
+    }
+    // Also check meter reading is not negative or zero
+    if(newMeter <= 0) {
+      $('e-meter').textContent = '⚠ METER READING MUST BE GREATER THAN 0';
+      $('e-meter').style.display='block';
+      $('f-meter').classList.add('err');
+      ok=false;
+    }
+  }
+
+  return ok;
+}
+
+function saveTrip(){
+  if(!validate())return;
+  const data={date:$('f-date').value,meter:$('f-meter').value,dest:$('f-dest').value,km:$('f-km').value,rate:$('f-rate').value,toll:$('f-toll').value,driver:$('f-driver').value,fuel:$('f-fuel').value,other:$('f-other').value,remarks:$('f-remarks').value};
+  if(editId){
+    const i=trips.findIndex(t=>t.id===editId);
+    trips[i]={...trips[i],...data};
+    toast('TRIP UPDATED');
+  } else {
+    trips.push({id:Date.now(),sl:sl++,...data});
+    toast('TRIP SAVED');
+    // auto-set month view to saved trip's month
+    const d=new Date(data.date);
+    viewMonth=d.getMonth(); viewYear=d.getFullYear();
+  }
+  persist(); editId=null; showPage('list'); renderList();
+}
+
+// ── DETAIL ────────────────────────────────────────────────────
+function openDetail(id){
+  detId=id; const t=trips.find(x=>x.id===id); if(!t)return;
+  $('d-sl').textContent='#'+t.sl; $('d-dt').textContent=t.date;
+  $('d-dest').textContent=''+t.dest;
+  $('d-meta').textContent='Meter: '+t.meter+' km  •  Distance: '+t.km+' km';
+  $('d-rate').textContent=rs(t.rate); $('d-toll2').textContent=rs(t.toll);
+  $('d-total').textContent=rs(calcTotal(t));
+  $('d-driver').textContent=rs(t.driver); $('d-fuel2').textContent=rs(t.fuel); $('d-other2').textContent=rs(t.other);
+  $('d-inhand').textContent=rs(calcInHand(t));
+  $('d-rem').textContent=t.remarks?'📝 '+t.remarks:'';
+  $('d-rem-sec').style.display=t.remarks?'block':'none';
+  showPage('detail');
+}
+
+function editCurrent(){ editTrip(detId); }
+function editTrip(id){
+  const t=trips.find(x=>x.id===id); if(!t)return;
+  editId=id;
+  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>$('f-'+k).value=t[k]||'');
+  $('saveBtn').textContent='UPDATE TRIP'; calcPrev(); showPage('form');
+}
+
+// ── DELETE ────────────────────────────────────────────────────
+function askDel(){ askDelById(detId); }
+function askDelById(id){ delId=id; $('deleteModal').classList.remove('hidden'); }
+function closeModal(modalId){
+  if(modalId && $(modalId)){
+    $(modalId).classList.add('hidden');
+    if(modalId === 'deleteModal') delId = null;
+    return;
+  }
+  // Default: close carEditModal
+  var el = $('carEditModal');
+  if(el) el.classList.add('hidden');
+}
+function closeDeleteModal(){
+  $('deleteModal').classList.add('hidden');
+  delId = null;
+}
+function confirmDelete(){
+  trips=trips.filter(t=>t.id!==delId); persist(); closeDeleteModal();
+  toast('TRIP DELETED','err');
+  if(curView==='detail'){showPage('list');}
+  renderList();
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+
+// ── CAR PROFILE ───────────────────────────────────────────────
+function loadCarProfile(){
+  const cp = JSON.parse(localStorage.getItem('ctr_car')||'{}');
+  if(cp.company) document.getElementById('disp-company').textContent = cp.company.toUpperCase();
+  if(cp.model)   document.getElementById('disp-model').textContent = cp.model.toUpperCase();
+  if(cp.type)    document.getElementById('disp-type').textContent = cp.type;
+  if(cp.seats)   document.getElementById('disp-seats').textContent = cp.seats;
+  if(cp.fueltype)document.getElementById('disp-fuel-type').textContent = cp.fueltype;
+  if(cp.photo){
+    const wrap = document.getElementById('carImgContainer');
+    wrap.innerHTML = '<img style="width:100%;height:100%;object-fit:cover;display:block;animation:carSlide 0.6s ease-out" src="'+cp.photo+'" alt="car"><div class="car-img-overlay"></div><div class="car-img-overlay2"></div>';
+  }
+  const plate = localStorage.getItem('ctr_plate');
+  if(plate) document.getElementById('carPlateDisplay').textContent = plate;
+}
+
+function openCarEdit(){
+  const cp = JSON.parse(localStorage.getItem('ctr_car')||'{}');
+  if(cp.company) document.getElementById('ce-company').value = cp.company;
+  if(cp.model)   document.getElementById('ce-model').value = cp.model;
+  if(cp.type)    document.getElementById('ce-type').value = cp.type;
+  if(cp.seats)   document.getElementById('ce-seats').value = cp.seats;
+  if(cp.fueltype)document.getElementById('ce-fueltype').value = cp.fueltype;
+  if(cp.photo){
+    document.getElementById('ce-photo-preview').style.display='block';
+    document.getElementById('ce-preview-img').src = cp.photo;
+  }
+  document.getElementById('carEditModal').classList.remove('hidden');
+}
+
+function closeCarEdit(){
+  document.getElementById('carEditModal').classList.add('hidden');
+}
+
+function previewCarPhoto(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    document.getElementById('ce-photo-preview').style.display='block';
+    document.getElementById('ce-no-photo-msg').style.display='none';
+    document.getElementById('ce-preview-img').src = e.target.result;
+    document.getElementById('ce-remove-photo').style.display='block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeCarPhoto(){
+  document.getElementById('ce-photo').value = '';
+  document.getElementById('ce-preview-img').src = '';
+  document.getElementById('ce-photo-preview').style.display='none';
+  document.getElementById('ce-no-photo-msg').style.display='block';
+  document.getElementById('ce-remove-photo').style.display='none';
+}
+
+function saveCarProfile(){
+  const company  = document.getElementById('ce-company').value.trim();
+  const model    = document.getElementById('ce-model').value.trim();
+  const type     = document.getElementById('ce-type').value;
+  const seats    = document.getElementById('ce-seats').value;
+  const fueltype = document.getElementById('ce-fueltype').value;
+  const previewImg = document.getElementById('ce-preview-img').src;
+  const hasPhoto = document.getElementById('ce-photo-preview').style.display !== 'none' && previewImg;
+
+  const cp = { company, model, type, seats, fueltype };
+  if(hasPhoto && previewImg.startsWith('data:')) cp.photo = previewImg;
+  else {
+    const existing = JSON.parse(localStorage.getItem('ctr_car')||'{}');
+    if(existing.photo) cp.photo = existing.photo;
+  }
+
+  localStorage.setItem('ctr_car', JSON.stringify(cp));
+  closeCarEdit();
+  loadCarProfile();
+  toast('CAR PROFILE SAVED');
+}
+
+function editPlate(){
+  const cur = document.getElementById('carPlateDisplay').textContent;
+  const val = prompt('ENTER VEHICLE NUMBER:', cur === 'TAP TO SET' ? '' : cur);
+  if(val && val.trim()){
+    const plate = val.trim().toUpperCase();
+    document.getElementById('carPlateDisplay').textContent = plate;
+    localStorage.setItem('ctr_plate', plate);
+  }
+}
+
+// ── PIN LOCK SYSTEM ───────────────────────────────────
+const PIN_KEY = 'ctr_pin';
+const PIN_SET_KEY = 'ctr_pin_set';
+let pinBuffer = '';
+let pinMode = 'login'; // 'login' | 'setup-first' | 'setup-confirm'
+let pinFirstEntry = '';
+let wrongAttempts = 0;
+
+function initPinScreen() {
+  const savedPin = localStorage.getItem(PIN_KEY);
+  const pinScreen = document.getElementById('pinScreen');
+  if (!savedPin) {
+    // First time — setup mode
+    pinMode = 'setup-first';
+    document.getElementById('pinSubText').textContent = 'CREATE A 4-DIGIT PIN';
+    document.getElementById('pinSetupNote').style.display = 'block';
+    document.getElementById('pinForgotBtn').style.display = 'none';
+  } else {
+    // Login mode
+    pinMode = 'login';
+    document.getElementById('pinSubText').textContent = 'ENTER YOUR PIN';
+    document.getElementById('pinForgotBtn').style.display = 'block';
+    document.getElementById('pinSetupNote').style.display = 'none';
+  }
+  pinBuffer = '';
+  updatePinDots();
+  pinScreen.classList.remove('hidden');
+}
+
+function pinPress(digit) {
+  if (pinBuffer.length >= 4) return;
+  pinBuffer += digit;
+  updatePinDots();
+  if (pinBuffer.length === 4) {
+    setTimeout(() => handlePinComplete(), 200);
+  }
+}
+
+function pinDel() {
+  if (pinBuffer.length > 0) {
+    pinBuffer = pinBuffer.slice(0, -1);
+    updatePinDots();
+  }
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.toggle('filled', i < pinBuffer.length);
+    dot.classList.remove('shake');
+  }
+}
+
+function handlePinComplete() {
+  const savedPin = localStorage.getItem(PIN_KEY);
+
+  if (pinMode === 'login') {
+    if (pinBuffer === savedPin) {
+      wrongAttempts = 0;
+      unlockApp();
+    } else {
+      wrongAttempts++;
+      document.getElementById('pinErr').textContent =
+        wrongAttempts >= 3
+          ? `WRONG PIN (${wrongAttempts} ATTEMPTS) — TAP "FORGOT PIN" TO RESET`
+          : 'WRONG PIN. TRY AGAIN ❌';
+      shakeDots();
+      pinBuffer = '';
+      updatePinDots();
+      if (wrongAttempts >= 3) {
+        document.getElementById('pinForgotBtn').style.display = 'block';
+      }
+    }
+  } else if (pinMode === 'setup-first') {
+    pinFirstEntry = pinBuffer;
+    pinMode = 'setup-confirm';
+    document.getElementById('pinSubText').textContent = 'CONFIRM YOUR PIN';
+    document.getElementById('pinSetupNote').style.display = 'none';
+    document.getElementById('pinErr').textContent = '';
+    pinBuffer = '';
+    updatePinDots();
+  } else if (pinMode === 'setup-confirm') {
+    if (pinBuffer === pinFirstEntry) {
+      localStorage.setItem(PIN_KEY, pinBuffer);
+      toast('PIN SET SUCCESSFULLY 🔒');
+      unlockApp();
+    } else {
+      document.getElementById('pinErr').textContent = 'PINS DO NOT MATCH. TRY AGAIN ❌';
+      shakeDots();
+      pinMode = 'setup-first';
+      pinFirstEntry = '';
+      pinBuffer = '';
+      updatePinDots();
+      document.getElementById('pinSubText').textContent = 'CREATE A 4-DIGIT PIN';
+    }
+  }
+}
+
+function shakeDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById('pd' + i);
+    dot.classList.add('shake');
+    setTimeout(() => dot.classList.remove('shake'), 400);
+  }
+}
+
+function unlockApp() {
+  document.getElementById('pinScreen').classList.add('hidden');
+  document.getElementById('pinErr').textContent = '';
+  pinBuffer = '';
+  updatePinDots();
+}
+
+function logoutApp() {
+  const savedPin = localStorage.getItem(PIN_KEY);
+  if (!savedPin) {
+    toast('NO PIN SET. PLEASE CHANGE PIN FIRST.');
+    return;
+  }
+  pinMode = 'login';
+  pinBuffer = '';
+  wrongAttempts = 0;
+  document.getElementById('pinSubText').textContent = 'ENTER YOUR PIN';
+  document.getElementById('pinErr').textContent = '';
+  document.getElementById('pinSetupNote').style.display = 'none';
+  document.getElementById('pinForgotBtn').style.display = 'block';
+  updatePinDots();
+  document.getElementById('pinScreen').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function pinForgot() {
+  const ok = confirm('⚠️ RESET WILL DELETE ALL YOUR TRIP DATA.\n\nARE YOU SURE?');
+  if (ok) {
+    localStorage.clear();
+    toast('DATA RESET. PLEASE SET A NEW PIN.');
+    setTimeout(() => location.reload(), 1000);
+  }
+}
+
+// ── CHANGE PIN (from settings row if added) ───────────
+function changePin() {
+  localStorage.removeItem(PIN_KEY);
+  pinMode = 'setup-first';
+  pinFirstEntry = '';
+  pinBuffer = '';
+  wrongAttempts = 0;
+  document.getElementById('pinSubText').textContent = 'CREATE NEW PIN';
+  document.getElementById('pinSetupNote').style.display = 'block';
+  document.getElementById('pinForgotBtn').style.display = 'none';
+  document.getElementById('pinErr').textContent = '';
+  updatePinDots();
+  document.getElementById('pinScreen').classList.remove('hidden');
+}
+
+
+// ── MULTI-CAR SYSTEM ──────────────────────────────────────────────────
+let cars = JSON.parse(localStorage.getItem('ctr_cars') || '[]');
+let activeCar = localStorage.getItem('ctr_active_car') || null;
+let editingCarId = null;
+
+function initCars() {
+  // Migrate old single-car data to multi-car system
+  if (cars.length === 0) {
+    const oldCar = JSON.parse(localStorage.getItem('ctr_car') || '{}');
+    const oldPlate = localStorage.getItem('ctr_plate') || '';
+    const oldTrips = JSON.parse(localStorage.getItem('ctr_v2') || '[]');
+    const firstCar = {
+      id: 'car_' + Date.now(),
+      company: oldCar.company || 'MY CAR',
+      model: oldCar.model || 'CAR 1',
+      plate: oldPlate || '',
+      type: oldCar.type || 'SEDAN',
+      seats: oldCar.seats || '5 SEATER',
+      fueltype: oldCar.fueltype || 'PETROL',
+      photo: oldCar.photo || null,
+      trips: oldTrips,
+      sl: parseInt(localStorage.getItem('ctr_sl') || '1'),
+    };
+    cars.push(firstCar);
+    activeCar = firstCar.id;
+    saveCars();
+  }
+  if (!activeCar || !cars.find(c => c.id === activeCar)) {
+    activeCar = cars[0]?.id || null;
+  }
+  loadActiveCar();
+}
+
+function saveCars() {
+  localStorage.setItem('ctr_cars', JSON.stringify(cars));
+  localStorage.setItem('ctr_active_car', activeCar || '');
+}
+
+function loadActiveCar() {
+  const car = cars.find(c => c.id === activeCar);
+  if (!car) return;
+  trips = car.trips || [];
+  sl = car.sl || 1;
+  // Update car profile card display
+  $('disp-company').textContent = (car.company || 'YOUR CAR').toUpperCase();
+  $('disp-model').textContent = (car.model || 'TAP EDIT TO SET').toUpperCase();
+  $('disp-type').textContent = car.type || 'TYPE';
+  $('disp-seats').textContent = car.seats || 'SEATS';
+  $('disp-fuel-type').textContent = car.fueltype || 'FUEL';
+  $('carPlateDisplay').textContent = car.plate || 'TAP TO SET';
+  if (car.photo) {
+    $('carImgContainer').innerHTML = '<img class="car-img" src="' + car.photo + '" alt="car"><div class="car-img-overlay"></div>';
+  } else {
+    $('carImgContainer').innerHTML = '<div style="text-align:center;color:#4A4270;"><div style="font-size:48px;margin-bottom:8px;">🚗</div><div style="font-size:11px;font-weight:700;letter-spacing:1px;">TAP EDIT TO ADD CAR PHOTO</div></div>';
+  }
+  $('headerTitle').textContent = (car.model || 'CAR TRIP REGISTER').toUpperCase();
+}
+
+function persistActiveCarData() {
+  const idx = cars.findIndex(c => c.id === activeCar);
+  if (idx === -1) return;
+  cars[idx].trips = trips;
+  cars[idx].sl = sl;
+  saveCars();
+}
+
+// persist is already defined above, we reassign it via the function below
+
+function openGarage() {
+  renderGarage();
+  $('garageScreen').classList.remove('hidden');
+}
+
+function closeGarage() {
+  $('garageScreen').classList.add('hidden');
+}
+
+function renderGarage() {
+  const list = $('carSlotList');
+  list.innerHTML = cars.map(car => {
+    const isActive = car.id === activeCar;
+    const tripCount = (car.trips || []).length;
+    const totalKm = (car.trips || []).reduce((s, t) => s + n(t.km), 0);
+    return `<div class="car-slot${isActive ? ' selected' : ''}" onclick="switchCar('${car.id}')">
+      <div class="car-slot-inner">
+        <div class="car-slot-icon">
+          ${car.photo ? `<img src="${car.photo}" alt="car">` : '🚗'}
+        </div>
+        <div class="car-slot-info">
+          <div class="car-slot-name">${(car.company||'') + ' ' + (car.model||'MY CAR')}</div>
+          <div class="car-slot-plate">${car.plate || 'NO PLATE SET'}</div>
+          <div class="car-slot-stats">
+            <span class="car-slot-stat">${tripCount} TRIPS</span>
+            <span class="car-slot-stat">🛣️ ${totalKm.toFixed(0)} KM</span>
+            <span class="car-slot-stat">${car.fueltype||''}</span>
+          </div>
+        </div>
+        <div class="car-slot-actions">
+          ${isActive ? '<span class="active-badge">ACTIVE</span>' : ''}
+          <button onclick="event.stopPropagation();editCarById('${car.id}')" style="background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.3);color:#9D5FF5;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:800;cursor:pointer;margin-top:4px;font-family:inherit;">EDIT</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchCar(carId) {
+  persistActiveCarData();
+  activeCar = carId;
+  saveCars();
+  loadActiveCar();
+  closeGarage();
+  renderList();
+  toast('SWITCHED TO ' + (cars.find(c=>c.id===carId)?.model||'CAR').toUpperCase() + ' ✓');
+}
+
+function addNewCar() {
+  editingCarId = null;
+  // Clear all fields
+  $('ce-company').value = '';
+  $('ce-model').value = '';
+  $('ce-plate').value = '';
+  $('ce-type').value = 'SEDAN';
+  $('ce-seats').value = '5 SEATER';
+  $('ce-fueltype').value = 'PETROL';
+  $('ce-photo-preview').style.display = 'none';
+  $('ce-preview-img').src = '';
+  if($('ce-remove-photo')) $('ce-remove-photo').style.display = 'none';
+  if($('ce-no-photo-msg')) $('ce-no-photo-msg').style.display = 'block';
+  $('ce-delete-wrap').style.display = 'none';
+  $('carEditModalTitle').textContent = 'ADD NEW CAR';
+  // Show modal on top of garage
+  const modal = $('carEditModal');
+  modal.style.zIndex = '9999';
+  modal.classList.remove('hidden');
+}
+
+function editCarById(carId) {
+  const car = cars.find(c => c.id === carId);
+  if (!car) return;
+  editingCarId = carId;
+  $('ce-company').value = car.company || '';
+  $('ce-model').value = car.model || '';
+  $('ce-plate').value = car.plate || '';
+  $('ce-type').value = car.type || 'SEDAN';
+  $('ce-seats').value = car.seats || '5 SEATER';
+  $('ce-fueltype').value = car.fueltype || 'PETROL';
+  $('ce-delete-wrap').style.display = cars.length > 1 ? 'block' : 'none';
+  $('carEditModalTitle').textContent = 'EDIT CAR';
+  const editModal = $('carEditModal');
+  editModal.style.zIndex = '9999';
+  if (car.photo) {
+    $('ce-photo-preview').style.display='block';
+    $('ce-preview-img').src=car.photo;
+    $('ce-remove-photo').style.display='block';
+    $('ce-no-photo-msg').style.display='none';
+  } else {
+    $('ce-photo-preview').style.display='none';
+    $('ce-remove-photo').style.display='none';
+    $('ce-no-photo-msg').style.display='block';
+  }
+  $('carEditModal').classList.remove('hidden');
+}
+
+function openCarEdit() {
+  const car = cars.find(c => c.id === activeCar);
+  if (car) editCarById(car.id);
+  else addNewCar();
+}
+
+function saveCarProfile() {
+  const data = {
+    company: $('ce-company').value.trim().toUpperCase(),
+    model: $('ce-model').value.trim().toUpperCase(),
+    plate: $('ce-plate').value.trim().toUpperCase(),
+    type: $('ce-type').value,
+    seats: $('ce-seats').value,
+    fueltype: $('ce-fueltype').value,
+  };
+  const prev = $('ce-preview-img').src;
+  const photoRemoved = $('ce-photo-preview').style.display === 'none';
+  if (!photoRemoved && prev && prev.startsWith('data:')) data.photo = prev;
+  else if (photoRemoved) data.photo = null;
+
+  if (editingCarId) {
+    const idx = cars.findIndex(c => c.id === editingCarId);
+    if (idx !== -1) {
+      cars[idx] = { ...cars[idx], ...data };
+      if (!data.photo && $('ce-photo-preview').style.display === 'none') delete cars[idx].photo;
+    }
+    if (editingCarId === activeCar) loadActiveCar();
+  } else {
+    const newCar = { id: 'car_' + Date.now(), trips: [], sl: 1, ...data };
+    cars.push(newCar);
+    activeCar = newCar.id;
+    loadActiveCar();
+    trips = [];
+  }
+  saveCars();
+  // Close modal
+  const modal = $('carEditModal');
+  modal.classList.add('hidden');
+  modal.style.zIndex = '';
+  renderGarage();
+  renderList();
+  toast('CAR SAVED');
+}
+
+function deleteCurrentCar() {
+  if (cars.length <= 1) { toast('CANNOT DELETE — ONLY ONE CAR!', 'err'); return; }
+  if (!confirm('DELETE THIS CAR AND ALL ITS TRIPS?')) return;
+  cars = cars.filter(c => c.id !== editingCarId);
+  if (activeCar === editingCarId) {
+    activeCar = cars[0].id;
+    loadActiveCar();
+  }
+  saveCars();
+  const modal2 = $('carEditModal');
+  modal2.classList.add('hidden');
+  modal2.style.zIndex = '';
+  renderGarage();
+  renderList();
+  toast('CAR DELETED', 'err');
+}
+
+function editPlate() {
+  const car = cars.find(c => c.id === activeCar);
+  if (!car) return;
+  const val = prompt('ENTER VEHICLE NUMBER:', car.plate || '');
+  if (val !== null && val.trim()) {
+    const idx = cars.findIndex(c => c.id === activeCar);
+    cars[idx].plate = val.trim().toUpperCase();
+    saveCars();
+    loadActiveCar();
+  }
+}
+
+// ── EXIT SYSTEM ────────────────────────────────────────────────────────
+function showExitModal() { $('exitModal').classList.remove('hidden'); }
+function closeExitModal() { $('exitModal').classList.add('hidden'); }
+
+function lockAndExit() {
+  closeExitModal();
+  persistActiveCarData();
+  logoutApp();
+}
+
+function justExit() {
+  closeExitModal();
+  persistActiveCarData();
+  // Close window or go to blank
+  if (window.history.length > 1) { window.history.back(); }
+  else { window.close(); }
+  // Fallback — show message
+  setTimeout(() => toast('SAVED! YOU CAN NOW CLOSE THIS TAB.'), 300);
+}
+
+// Handle back button for exit
+window.addEventListener('popstate', function(e) {
+  showExitModal();
+});
+
+initCars();
+initPinScreen();
+renderList();
+</script>
+</body>
+</html>
