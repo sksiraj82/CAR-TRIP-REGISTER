@@ -562,10 +562,39 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
       <div class="field-error" id="e-km" style="display:none">⚠ Required</div>
     </div>
     <div class="section-divider">RATE & CHARGES</div>
+
+    <!-- FARE MODE TOGGLE -->
     <div class="field-group">
-      <label class="field-label">RATE PER KM (₹)</label>
-      <input class="field-input" type="number" id="f-rate" placeholder="e.g. 12" oninput="calcPrev()">
+      <label class="field-label">FARE TYPE <span class="field-req">*</span></label>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="btn-km-mode" onclick="setFareMode('km')"
+          style="flex:1;padding:12px;border-radius:10px;border:2px solid #D4A017;background:linear-gradient(135deg,#D4A017,#E8724A);color:#050D1A;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">
+          PER KM RATE
+        </button>
+        <button type="button" id="btn-fixed-mode" onclick="setFareMode('fixed')"
+          style="flex:1;padding:12px;border-radius:10px;border:2px solid #1A2F4A;background:#0A1628;color:#7A9BB5;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">
+          FIXED AMOUNT
+        </button>
+      </div>
     </div>
+
+    <!-- KM RATE FIELDS -->
+    <div id="km-rate-fields">
+      <div class="field-group">
+        <label class="field-label">RATE PER KM (₹)</label>
+        <input class="field-input" type="number" id="f-rate" placeholder="e.g. 12" oninput="calcPrev()">
+      </div>
+    </div>
+
+    <!-- FIXED AMOUNT FIELD -->
+    <div id="fixed-amount-fields" style="display:none;">
+      <div class="field-group">
+        <label class="field-label">CONTRACT / FIXED AMOUNT (₹) <span class="field-req">*</span></label>
+        <input class="field-input" type="number" id="f-fixedAmount" placeholder="e.g. 800" oninput="calcPrev()">
+        <div style="font-size:10px;color:#7A9BB5;margin-top:4px;padding-left:4px;">KM record থাকবে কিন্তু calculation এ যাবে না</div>
+      </div>
+    </div>
+
     <div class="field-group">
       <label class="field-label">TOLL (₹)</label>
       <input class="field-input" type="number" id="f-toll" placeholder="e.g. 280" oninput="calcPrev()">
@@ -610,7 +639,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
   <div class="detail-body">
     <div class="det-section">
       <div class="det-sec-title">TRIP FINANCIALS</div>
-      <div class="det-row"><span class="det-lbl">RATE PER KM</span><span class="det-val" id="d-rate"></span></div>
+      <div class="det-row"><span class="det-lbl">FARE TYPE</span><span class="det-val" id="d-faretype"></span></div>
+      <div class="det-row" id="d-rate-row"><span class="det-lbl">RATE PER KM</span><span class="det-val" id="d-rate"></span></div>
+      <div class="det-row" id="d-fixed-row" style="display:none"><span class="det-lbl">FIXED AMOUNT</span><span class="det-val" id="d-fixed"></span></div>
       <div class="det-row"><span class="det-lbl">TOLL</span><span class="det-val" id="d-toll2"></span></div>
       <div class="det-row"><span class="det-lbl">TOTAL AMOUNT</span><span class="det-val bold" id="d-total"></span></div>
     </div>
@@ -696,7 +727,10 @@ let editId = null, delId = null, detId = null;
 // ── UTILS ─────────────────────────────────────────────────────
 const n = v => parseFloat(v)||0;
 const rs = v => v!==''&&v!=null ? '₹'+n(v).toFixed(2) : '—';
-const calcTotal = t => n(t.km)*n(t.rate)+n(t.toll);
+const calcTotal = t => {
+  if(t.fareMode === 'fixed') return n(t.fixedAmount)+n(t.toll);
+  return n(t.km)*n(t.rate)+n(t.toll);
+};
 const calcExp = t => n(t.driver)+n(t.fuel)+n(t.other);
 const calcInHand = t => calcTotal(t)-calcExp(t);
 let persist = () => { persistActiveCarData(); }; // multi-car persist - overrideable
@@ -933,7 +967,11 @@ function editCurrent(){ editTrip(detId); }
 function editTrip(id){
   const t=trips.find(x=>x.id===id); if(!t)return;
   editId=id;
-  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>$('f-'+k).value=t[k]||'');
+  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>{
+    const el=$('f-'+k); if(el) el.value=t[k]||'';
+  });
+  const fa=$('f-fixedAmount'); if(fa) fa.value=t.fixedAmount||'';
+  setFareMode(t.fareMode||'km');
   $('saveBtn').textContent='UPDATE TRIP'; calcPrev(); showPage('form');
 }
 
