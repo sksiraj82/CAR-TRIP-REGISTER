@@ -713,6 +713,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────
+var currentFareMode = 'km'; // 'km' or 'fixed'
 let trips = JSON.parse(localStorage.getItem('ctr_v2') || '[]');
 let sl = parseInt(localStorage.getItem('ctr_sl') || '1');
 const MONTHS = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
@@ -867,64 +868,136 @@ function jumpToMonth(m){
 function openAdd(){ editId=null; clearForm(); $('saveBtn').textContent='SAVE TRIP'; showPage('form'); }
 
 function clearForm(){
-  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>{
-    $('f-'+k).value='';
-    $('f-'+k).classList.remove('err');
+  // Clear all standard fields
+  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
+    var el = $('f-'+k);
+    if(el){ el.value=''; el.classList.remove('err'); }
   });
-  ['date','meter','dest','km'].forEach(k=>{ $('e-'+k).style.display='none'; });
-  $('calcBox').style.display='none';
+  // Clear fixed amount field
+  var fa = $('f-fixedAmount');
+  if(fa){ fa.value=''; }
+  // Clear error messages
+  ['date','meter','dest','km'].forEach(function(k){
+    var e = $('e-'+k);
+    if(e) e.style.display='none';
+  });
+  // Hide calc box
+  var cb = $('calcBox');
+  if(cb) cb.style.display='none';
+  // Reset fare mode to KM
+  currentFareMode = 'km';
+  var kmBtn = $('btn-km-mode');
+  var fixedBtn = $('btn-fixed-mode');
+  var kmFields = $('km-rate-fields');
+  var fixedFields = $('fixed-amount-fields');
+  if(kmBtn){
+    kmBtn.style.background='linear-gradient(135deg,#D4A017,#E8724A)';
+    kmBtn.style.color='#050D1A';
+    kmBtn.style.borderColor='#D4A017';
+  }
+  if(fixedBtn){
+    fixedBtn.style.background='#0A1628';
+    fixedBtn.style.color='#7A9BB5';
+    fixedBtn.style.borderColor='#1A2F4A';
+  }
+  if(kmFields) kmFields.style.display='block';
+  if(fixedFields) fixedFields.style.display='none';
 }
 
 function clearE(k){ $('e-'+k).style.display='none'; $('f-'+k).classList.remove('err'); }
 
 function calcPrev(){
-  const km=n($('f-km').value),rate=n($('f-rate').value),toll=n($('f-toll').value);
-  const dr=n($('f-driver').value),fu=n($('f-fuel').value),ot=n($('f-other').value);
-  const any=km||rate||toll||dr||fu||ot;
-  const box=$('calcBox');
-  if(!any){box.style.display='none';return;}
-  box.style.display='block';
-  const total=km*rate+toll, exp=dr+fu+ot, ih=total-exp;
-  $('pv-total').textContent='₹'+total.toFixed(2);
-  $('pv-exp').textContent='₹'+exp.toFixed(2);
-  $('pv-inhand').textContent='₹'+ih.toFixed(2);
+  var km = n($('f-km').value);
+  var rate = n($('f-rate').value);
+  var toll = n($('f-toll').value);
+  var faEl = $('f-fixedAmount');
+  var fixed = faEl ? n(faEl.value) : 0;
+  var dr = n($('f-driver').value);
+  var fu = n($('f-fuel').value);
+  var ot = n($('f-other').value);
+  var any = km||rate||toll||fixed||dr||fu||ot;
+  var box = $('calcBox');
+  if(!any){ if(box) box.style.display='none'; return; }
+  if(box) box.style.display='block';
+  var total = 0;
+  if(currentFareMode === 'fixed'){
+    total = fixed + toll;
+  } else {
+    total = km * rate + toll;
+  }
+  var exp = dr + fu + ot;
+  var ih = total - exp;
+  var ptEl = $('pv-total');
+  var peEl = $('pv-exp');
+  var piEl = $('pv-inhand');
+  if(ptEl) ptEl.textContent='₹'+total.toFixed(2);
+  if(peEl) peEl.textContent='₹'+exp.toFixed(2);
+  if(piEl) piEl.textContent='₹'+ih.toFixed(2);
+}
+
+function setFareMode(mode){
+  currentFareMode = mode;
+  var kmBtn = $('btn-km-mode');
+  var fixedBtn = $('btn-fixed-mode');
+  var kmFields = $('km-rate-fields');
+  var fixedFields = $('fixed-amount-fields');
+  if(mode === 'km'){
+    if(kmBtn){ kmBtn.style.background='linear-gradient(135deg,#D4A017,#E8724A)'; kmBtn.style.color='#050D1A'; kmBtn.style.borderColor='#D4A017'; }
+    if(fixedBtn){ fixedBtn.style.background='#0A1628'; fixedBtn.style.color='#7A9BB5'; fixedBtn.style.borderColor='#1A2F4A'; }
+    if(kmFields) kmFields.style.display='block';
+    if(fixedFields) fixedFields.style.display='none';
+  } else {
+    if(fixedBtn){ fixedBtn.style.background='linear-gradient(135deg,#00C2CB,#00B67A)'; fixedBtn.style.color='#050D1A'; fixedBtn.style.borderColor='#00C2CB'; }
+    if(kmBtn){ kmBtn.style.background='#0A1628'; kmBtn.style.color='#7A9BB5'; kmBtn.style.borderColor='#1A2F4A'; }
+    if(kmFields) kmFields.style.display='none';
+    if(fixedFields) fixedFields.style.display='block';
+  }
+  calcPrev();
 }
 
 function validate(){
-  let ok=true;
+  var ok = true;
   // Check required fields
-  [['date','date'],['meter','meter'],['dest','dest'],['km','km']].forEach(([f,k])=>{
-    if(!$('f-'+f).value.trim()){$('e-'+k).style.display='block';$('f-'+f).classList.add('err');ok=false;}
+  [['date','date'],['meter','meter'],['dest','dest'],['km','km']].forEach(function(pair){
+    var f=pair[0], k=pair[1];
+    var el = $('f-'+f);
+    var ee = $('e-'+k);
+    if(!el || !el.value.trim()){
+      if(ee) ee.style.display='block';
+      if(el) el.classList.add('err');
+      ok = false;
+    }
   });
   if(!ok) return false;
 
-  // Meter reading must be greater than previous trip's meter reading
-  const newMeter = parseFloat($('f-meter').value);
-  if(!isNaN(newMeter) && trips.length > 0) {
-    // Get last trip meter reading (excluding current edit)
-    const otherTrips = editId ? trips.filter(t=>t.id!==editId) : trips;
-    if(otherTrips.length > 0) {
-      // Sort by date to find latest trip
-      const sorted = [...otherTrips].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      const lastMeter = parseFloat(sorted[0].meter);
-      if(!isNaN(lastMeter) && newMeter < lastMeter) {
-        $('e-meter').textContent = '⚠ METER READING MUST BE MORE THAN LAST ENTRY (' + lastMeter + ' KM)';
-        $('e-meter').style.display='block';
-        $('f-meter').classList.add('err');
-        ok=false;
-      } else if(!isNaN(lastMeter) && newMeter === lastMeter && !editId) {
-        $('e-meter').textContent = '⚠ METER READING SAME AS LAST ENTRY — PLEASE VERIFY';
-        $('e-meter').style.display='block';
-        $('f-meter').classList.add('err');
-        ok=false;
-      }
+  // Fixed amount required if fixed mode
+  if(currentFareMode === 'fixed'){
+    var faEl = $('f-fixedAmount');
+    if(!faEl || !faEl.value.trim()){
+      faEl.style.border='1.5px solid #E05252';
+      alert('FIXED AMOUNT ডিন!');
+      ok = false;
     }
-    // Also check meter reading is not negative or zero
-    if(newMeter <= 0) {
-      $('e-meter').textContent = '⚠ METER READING MUST BE GREATER THAN 0';
+  }
+
+  // Meter reading validation (only for new trips, skip for edits)
+  if(!editId){
+    var newMeter = parseFloat($('f-meter').value);
+    if(!isNaN(newMeter) && newMeter <= 0){
+      $('e-meter').textContent='⚠ METER READING MUST BE GREATER THAN 0';
       $('e-meter').style.display='block';
       $('f-meter').classList.add('err');
-      ok=false;
+      ok = false;
+    } else if(!isNaN(newMeter) && trips.length > 0){
+      var otherTrips = trips.slice();
+      otherTrips.sort(function(a,b){ return b.sl - a.sl; });
+      var lastMeter = parseFloat(otherTrips[0].meter);
+      if(!isNaN(lastMeter) && newMeter < lastMeter){
+        $('e-meter').textContent='⚠ LAST ENTRY METER: '+lastMeter+' KM — নতুন মিটার বেশি হতে হবে';
+        $('e-meter').style.display='block';
+        $('f-meter').classList.add('err');
+        ok = false;
+      }
     }
   }
 
@@ -932,47 +1005,119 @@ function validate(){
 }
 
 function saveTrip(){
-  if(!validate())return;
-  const data={date:$('f-date').value,meter:$('f-meter').value,dest:$('f-dest').value,km:$('f-km').value,rate:$('f-rate').value,toll:$('f-toll').value,driver:$('f-driver').value,fuel:$('f-fuel').value,other:$('f-other').value,remarks:$('f-remarks').value};
+  if(!validate()) return;
+  var faEl = $('f-fixedAmount');
+  var data = {
+    date: $('f-date').value,
+    meter: $('f-meter').value,
+    dest: $('f-dest').value.toUpperCase(),
+    km: $('f-km').value,
+    rate: $('f-rate').value,
+    toll: $('f-toll').value,
+    driver: $('f-driver').value,
+    fuel: $('f-fuel').value,
+    other: $('f-other').value,
+    remarks: $('f-remarks').value.toUpperCase(),
+    fareMode: currentFareMode || 'km',
+    fixedAmount: faEl ? faEl.value : '',
+  };
   if(editId){
-    const i=trips.findIndex(t=>t.id===editId);
-    trips[i]={...trips[i],...data};
+    var idx = trips.findIndex(function(t){ return t.id === editId; });
+    if(idx !== -1) trips[idx] = Object.assign({}, trips[idx], data);
     toast('TRIP UPDATED');
   } else {
-    trips.push({id:Date.now(),sl:sl++,...data});
+    trips.push(Object.assign({ id: Date.now(), sl: sl++ }, data));
     toast('TRIP SAVED');
-    // auto-set month view to saved trip's month
-    const d=new Date(data.date);
-    viewMonth=d.getMonth(); viewYear=d.getFullYear();
+    var d = new Date(data.date);
+    viewMonth = d.getMonth();
+    viewYear = d.getFullYear();
   }
-  persist(); editId=null; showPage('list'); renderList();
+  persist();
+  editId = null;
+  showPage('list');
+  renderList();
 }
 
 // ── DETAIL ────────────────────────────────────────────────────
 function openDetail(id){
-  detId=id; const t=trips.find(x=>x.id===id); if(!t)return;
-  $('d-sl').textContent='#'+t.sl; $('d-dt').textContent=t.date;
-  $('d-dest').textContent=''+t.dest;
-  $('d-meta').textContent='Meter: '+t.meter+' km  •  Distance: '+t.km+' km';
-  $('d-rate').textContent=rs(t.rate); $('d-toll2').textContent=rs(t.toll);
-  $('d-total').textContent=rs(calcTotal(t));
-  $('d-driver').textContent=rs(t.driver); $('d-fuel2').textContent=rs(t.fuel); $('d-other2').textContent=rs(t.other);
-  $('d-inhand').textContent=rs(calcInHand(t));
-  $('d-rem').textContent=t.remarks?'📝 '+t.remarks:'';
-  $('d-rem-sec').style.display=t.remarks?'block':'none';
+  detId = id;
+  var t = trips.find(function(x){ return x.id === id; });
+  if(!t) return;
+  $('d-sl').textContent = '#'+t.sl;
+  $('d-dt').textContent = t.date;
+  $('d-dest').textContent = t.dest;
+  $('d-meta').textContent = 'METER: '+t.meter+' KM  |  DISTANCE: '+t.km+' KM';
+
+  // Fare type display
+  var fareTypeEl = $('d-faretype');
+  var rateRowEl = $('d-rate-row');
+  var fixedRowEl = $('d-fixed-row');
+  var dRateEl = $('d-rate');
+  var dFixedEl = $('d-fixed');
+
+  if(t.fareMode === 'fixed'){
+    if(fareTypeEl){ fareTypeEl.textContent='FIXED CONTRACT'; fareTypeEl.style.color='#00C2CB'; }
+    if(rateRowEl) rateRowEl.style.display='none';
+    if(fixedRowEl) fixedRowEl.style.display='flex';
+    if(dFixedEl) dFixedEl.textContent = rs(t.fixedAmount);
+  } else {
+    if(fareTypeEl){ fareTypeEl.textContent='PER KM RATE'; fareTypeEl.style.color='#D4A017'; }
+    if(rateRowEl) rateRowEl.style.display='flex';
+    if(fixedRowEl) fixedRowEl.style.display='none';
+    if(dRateEl) dRateEl.textContent = rs(t.rate);
+  }
+
+  $('d-toll2').textContent = rs(t.toll);
+  $('d-total').textContent = rs(calcTotal(t));
+  $('d-driver').textContent = rs(t.driver);
+  $('d-fuel2').textContent = rs(t.fuel);
+  $('d-other2').textContent = rs(t.other);
+  $('d-inhand').textContent = rs(calcInHand(t));
+
+  var remEl = $('d-rem');
+  var remSec = $('d-rem-sec');
+  if(remEl) remEl.textContent = t.remarks || '';
+  if(remSec) remSec.style.display = t.remarks ? 'block' : 'none';
+
   showPage('detail');
 }
 
 function editCurrent(){ editTrip(detId); }
 function editTrip(id){
-  const t=trips.find(x=>x.id===id); if(!t)return;
-  editId=id;
-  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(k=>{
-    const el=$('f-'+k); if(el) el.value=t[k]||'';
+  var t = trips.find(function(x){ return x.id === id; });
+  if(!t) return;
+  editId = id;
+  // Fill all fields safely
+  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
+    var el = $('f-'+k);
+    if(el) el.value = t[k] || '';
   });
-  const fa=$('f-fixedAmount'); if(fa) fa.value=t.fixedAmount||'';
-  setFareMode(t.fareMode||'km');
-  $('saveBtn').textContent='UPDATE TRIP'; calcPrev(); showPage('form');
+  // Fixed amount
+  var faEl = $('f-fixedAmount');
+  if(faEl) faEl.value = t.fixedAmount || '';
+  // Set fare mode
+  var mode = t.fareMode || 'km';
+  currentFareMode = mode;
+  // Update UI for fare mode
+  var kmBtn = $('btn-km-mode');
+  var fixedBtn = $('btn-fixed-mode');
+  var kmFields = $('km-rate-fields');
+  var fixedFields = $('fixed-amount-fields');
+  if(mode === 'fixed'){
+    if(fixedBtn){ fixedBtn.style.background='linear-gradient(135deg,#00C2CB,#00B67A)'; fixedBtn.style.color='#050D1A'; fixedBtn.style.borderColor='#00C2CB'; }
+    if(kmBtn){ kmBtn.style.background='#0A1628'; kmBtn.style.color='#7A9BB5'; kmBtn.style.borderColor='#1A2F4A'; }
+    if(kmFields) kmFields.style.display='none';
+    if(fixedFields) fixedFields.style.display='block';
+  } else {
+    if(kmBtn){ kmBtn.style.background='linear-gradient(135deg,#D4A017,#E8724A)'; kmBtn.style.color='#050D1A'; kmBtn.style.borderColor='#D4A017'; }
+    if(fixedBtn){ fixedBtn.style.background='#0A1628'; fixedBtn.style.color='#7A9BB5'; fixedBtn.style.borderColor='#1A2F4A'; }
+    if(kmFields) kmFields.style.display='block';
+    if(fixedFields) fixedFields.style.display='none';
+  }
+  var sb = $('saveBtn');
+  if(sb) sb.textContent='UPDATE TRIP';
+  calcPrev();
+  showPage('form');
 }
 
 // ── DELETE ────────────────────────────────────────────────────
