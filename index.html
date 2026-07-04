@@ -30,6 +30,44 @@
   --grad2:linear-gradient(135deg,#00C2CB,#D4A017);
   --grad3:linear-gradient(135deg,#00B67A,#00C2CB);
 }
+/* LIGHT MODE */
+body.light-mode{
+  --bg:#F5F7FA;
+  --card:#FFFFFF;
+  --card2:#F0F4FF;
+  --border:#DDE3EF;
+  --purple:#B8860B;
+  --purple2:#9A7209;
+  --pink:#C85A2A;
+  --cyan:#0097A7;
+  --green:#007A52;
+  --orange:#C85A2A;
+  --red:#C0392B;
+  --yellow:#B8860B;
+  --text:#1A1A2E;
+  --muted:#5A6480;
+  --input-bg:#F0F4FF;
+}
+body.light-mode .header{ background:linear-gradient(160deg,#1A3A6B,#0D2B5A) !important; }
+body.light-mode .bottom-nav{ background:#FFFFFF; box-shadow:0 -2px 12px rgba(0,0,0,0.1); }
+body.light-mode .pin-screen{ background:linear-gradient(160deg,#1A3A6B,#0D2B5A) !important; }
+body.light-mode .modal-box{ background:#FFFFFF; }
+body.light-mode .exit-sheet{ background:#FFFFFF; }
+body.light-mode .garage-screen{ background:linear-gradient(160deg,#F5F7FA,#EEF2FF); }
+body.light-mode .garage-header{ background:linear-gradient(135deg,#1A3A6B,#0D2B5A); }
+body.light-mode .detail-hero{ background:linear-gradient(160deg,#1A3A6B,#0D2B5A); }
+body.light-mode .car-profile-card{ background:linear-gradient(135deg,#1A3A6B,#0D2B5A,#0A2A1A); }
+body.light-mode .calc-box-ui{ background:#FFFFFF; border-color:#DDE3EF; }
+body.light-mode .calc-display{ background:#F0F4FF; border-color:#DDE3EF; }
+body.light-mode .calc-result{ color:#1A1A2E; }
+body.light-mode .calc-key.num{ background:#F0F4FF; color:#1A1A2E; }
+body.light-mode .form-card{ background:#FFFFFF; }
+body.light-mode .year-totals{ background:#FFFFFF; }
+body.light-mode .month-tile{ background:#FFFFFF; }
+body.light-mode .trip-card{ background:#FFFFFF; }
+body.light-mode .car-slot{ background:#FFFFFF; }
+body.light-mode .field-input{ background:#F0F4FF; color:#1A1A2E; }
+body.light-mode .search-input{ color:#1A1A2E; }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;overflow-x:hidden;}
 
 /* SCROLLBAR */
@@ -258,6 +296,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
 .exit-opt{width:100%;padding:15px;border-radius:14px;border:none;font-weight:800;font-size:14px;letter-spacing:1px;cursor:pointer;font-family:inherit;transition:opacity 0.15s;}
 .exit-opt:active{opacity:0.8;}
 
+
+/* CALCULATOR */
+.calc-screen{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:8500;}
+.calc-screen.hidden{display:none;}
+.calc-box-ui{background:#0A1628;border-radius:24px;padding:20px;width:320px;border:1px solid #1A2F4A;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+.calc-display{background:#050D1A;border-radius:14px;padding:16px 20px;margin-bottom:16px;text-align:right;border:1px solid #1A2F4A;min-height:90px;display:flex;flex-direction:column;justify-content:flex-end;}
+.calc-expr{color:#7A9BB5;font-size:13px;font-family:monospace;min-height:18px;word-break:break-all;}
+.calc-result{color:#F0F4FF;font-size:32px;font-weight:800;font-family:monospace;word-break:break-all;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.calc-key{padding:16px 8px;border-radius:12px;border:none;font-size:16px;font-weight:700;cursor:pointer;font-family:monospace;transition:opacity 0.1s;line-height:1;}
+.calc-key:active{opacity:0.7;transform:scale(0.95);}
+.calc-key.num{background:#0D1E35;color:#F0F4FF;}
+.calc-key.op{background:rgba(212,160,23,0.15);color:#D4A017;border:1px solid rgba(212,160,23,0.3);}
+.calc-key.eq{background:linear-gradient(135deg,#D4A017,#E8724A);color:#050D1A;grid-column:span 2;}
+.calc-key.clr{background:rgba(224,82,82,0.15);color:#E05252;}
+.calc-key.del{background:rgba(0,194,203,0.12);color:#00C2CB;}
+.calc-key.zero{grid-column:span 2;}
+.calc-close-btn{width:100%;padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:#7A9BB5;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-top:10px;}
+
 /* GLOWING DOT PULSE (FAB) */
 @keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(124,58,237,0.5);}100%{box-shadow:0 0 0 14px rgba(124,58,237,0);}}
 .fab{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:26px;border:none;background:var(--grad);color:#fff;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:150;box-shadow:0 4px 20px rgba(124,58,237,0.5);animation:pulse-ring 2s infinite;font-family:inherit;}
@@ -422,13 +479,54 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
   </div>
 </div>
 
+<!-- CALCULATOR MODAL -->
+<div class="calc-screen hidden" id="calcScreen">
+  <div class="calc-box-ui">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:800;color:#D4A017;letter-spacing:1px;">&#128290; CALCULATOR</div>
+      <button onclick="closeCalculator()" style="background:rgba(224,82,82,0.15);border:none;color:#E05252;border-radius:8px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">X CLOSE</button>
+    </div>
+    <div class="calc-display">
+      <div class="calc-expr" id="calcExpr"></div>
+      <div class="calc-result" id="calcResult">0</div>
+    </div>
+    <div class="calc-grid">
+      <button class="calc-key clr" onclick="calcAction('C')">C</button>
+      <button class="calc-key del" onclick="calcAction('DEL')">DEL</button>
+      <button class="calc-key op" onclick="calcAction('%')">%</button>
+      <button class="calc-key op" onclick="calcAction('/')">&divide;</button>
+
+      <button class="calc-key num" onclick="calcAction('7')">7</button>
+      <button class="calc-key num" onclick="calcAction('8')">8</button>
+      <button class="calc-key num" onclick="calcAction('9')">9</button>
+      <button class="calc-key op" onclick="calcAction('*')">&times;</button>
+
+      <button class="calc-key num" onclick="calcAction('4')">4</button>
+      <button class="calc-key num" onclick="calcAction('5')">5</button>
+      <button class="calc-key num" onclick="calcAction('6')">6</button>
+      <button class="calc-key op" onclick="calcAction('-')">&minus;</button>
+
+      <button class="calc-key num" onclick="calcAction('1')">1</button>
+      <button class="calc-key num" onclick="calcAction('2')">2</button>
+      <button class="calc-key num" onclick="calcAction('3')">3</button>
+      <button class="calc-key op" onclick="calcAction('+')">+</button>
+
+      <button class="calc-key num zero" onclick="calcAction('0')">0</button>
+      <button class="calc-key num" onclick="calcAction('.')">.</button>
+      <button class="calc-key eq" onclick="calcAction('=')">=</button>
+    </div>
+    <button class="calc-close-btn" onclick="closeCalculator()">CLOSE CALCULATOR</button>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="header" id="header">
   <div class="status-bar">
     <span class="status-time" id="clockEl">9:41 AM</span>
     <div style="display:flex;gap:6px;align-items:center;">
-  <button onclick="openGarage()" style="background:linear-gradient(135deg,#1A4A2E,#0D6B3A);border:1px solid #00B67A;color:#00E896;border-radius:10px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">&#127968; GARAGE</button>
+  <button onclick="openCalculator()" style="background:linear-gradient(135deg,#1A4A2E,#0D6B3A);border:1px solid #00B67A;color:#00E896;border-radius:10px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">&#128290; CALC</button>
   <button onclick="showExitModal()" style="background:linear-gradient(135deg,#4A1A00,#8B3A00);border:1px solid #E8724A;color:#FFB347;border-radius:10px;padding:6px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.5px;">&#128682; EXIT</button>
+  <button onclick="toggleDarkMode()" id="darkModeBtn" style="background:linear-gradient(135deg,#1A2A4A,#0D1E6B);border:1px solid #D4A017;color:#F0C040;border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:inherit;" title="DARK/LIGHT MODE">&#9790;</button>
   <button onclick="logoutApp()" style="background:linear-gradient(135deg,#1A2A4A,#0D1E6B);border:1px solid #D4A017;color:#F0C040;border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;font-family:inherit;">&#128274;</button>
 </div>
   </div>
@@ -561,6 +659,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
       <input class="field-input" type="number" id="f-km" placeholder="e.g. 148" oninput="clearE('km');calcPrev()">
       <div class="field-error" id="e-km" style="display:none">⚠ Required</div>
     </div>
+    <div class="field-group">
+      <label class="field-label">EXTRA KM (OPTIONAL)</label>
+      <input class="field-input no-upper" type="number" id="f-extrakm" placeholder="e.g. 15 (calculation এ যাবে না)" oninput="calcPrev()" style="border-color:rgba(0,194,203,0.4);">
+      <div style="font-size:10px;color:#00C2CB;margin-top:4px;padding-left:4px;">Extra KM শুধু Total KM এ যোগ হবে — ভাড়া calculation এ যাবে না</div>
+    </div>
     <div class="section-divider">RATE & CHARGES</div>
 
     <!-- FARE MODE TOGGLE -->
@@ -609,7 +712,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
       <input class="field-input" type="number" id="f-fuel" placeholder="e.g. 1200" oninput="calcPrev()">
     </div>
     <div class="field-group">
-      <label class="field-label">OTHER EXPENSES (₹)</label>
+      <label class="field-label">OTHER EXPENSES / DISCOUNT (₹)</label>
       <input class="field-input" type="number" id="f-other" placeholder="e.g. 150" oninput="calcPrev()">
     </div>
     <div class="field-group">
@@ -618,6 +721,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
     </div>
     <div class="calc-box" id="calcBox" style="display:none">
       <div class="calc-title">LIVE CALCULATION PREVIEW</div>
+      <div class="calc-row" id="pv-km-row" style="display:none"><span class="calc-lbl" style="color:#00C2CB;" id="pv-totalkm"></span></div>
       <div class="calc-row"><span class="calc-lbl">TOTAL AMOUNT</span><span class="calc-val" id="pv-total">₹0</span></div>
       <div class="calc-row"><span class="calc-lbl">TOTAL EXPENSES</span><span class="calc-val" id="pv-exp">₹0</span></div>
       <div class="calc-row"><span class="calc-lbl">IN HAND AMOUNT</span><span class="calc-val grn" id="pv-inhand">₹0</span></div>
@@ -649,7 +753,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
       <div class="det-sec-title">EXPENSES BREAKDOWN</div>
       <div class="det-row"><span class="det-lbl">DRIVER EXPENSES</span><span class="det-val" id="d-driver"></span></div>
       <div class="det-row"><span class="det-lbl">FUEL COST</span><span class="det-val" id="d-fuel2"></span></div>
-      <div class="det-row"><span class="det-lbl">OTHER EXPENSES</span><span class="det-val" id="d-other2"></span></div>
+      <div class="det-row"><span class="det-lbl">OTHER EXPENSES / DISCOUNT</span><span class="det-val" id="d-other2"></span></div>
     </div>
     <div class="det-section">
       <div class="det-sec-title">NET AMOUNT</div>
@@ -804,7 +908,7 @@ function renderList(){
     return mMatch&&sMatch;
   });
   $('tripCount').textContent=trips.length;
-  const km=filtered.reduce((s,t)=>s+n(t.km),0);
+  const km=filtered.reduce((s,t)=>s+n(t.km)+n(t.extrakm),0);
   const fuel=filtered.reduce((s,t)=>s+n(t.fuel),0);
   const toll=filtered.reduce((s,t)=>s+n(t.toll),0);
   const ih=filtered.reduce((s,t)=>s+calcInHand(t),0);
@@ -844,7 +948,7 @@ function renderMonthly(){
   let html='';
   for(let m=0;m<12;m++){
     const mTrips=yearTrips.filter(t=>new Date(t.date).getMonth()===m);
-    const km=mTrips.reduce((s,t)=>s+n(t.km),0);
+    const km=mTrips.reduce((s,t)=>s+n(t.km)+n(t.extrakm),0);
     const hasDat=mTrips.length>0;
     html+=`<div class="month-tile${hasDat?' has-data':''}" onclick="jumpToMonth(${m})">
       <div class="month-tile-name">${MONTHS_SHORT[m]}</div>
@@ -853,7 +957,7 @@ function renderMonthly(){
   }
   $('monthGrid').innerHTML=html;
   $('yt-trips').textContent=yearTrips.length;
-  $('yt-km').textContent=yearTrips.reduce((s,t)=>s+n(t.km),0).toFixed(0)+' km';
+  $('yt-km').textContent=yearTrips.reduce((s,t)=>s+n(t.km)+n(t.extrakm),0).toFixed(0)+' km';
   $('yt-fuel').textContent='₹'+yearTrips.reduce((s,t)=>s+n(t.fuel),0).toFixed(2);
   $('yt-toll').textContent='₹'+yearTrips.reduce((s,t)=>s+n(t.toll),0).toFixed(2);
   $('yt-inhand').textContent='₹'+yearTrips.reduce((s,t)=>s+calcInHand(t),0).toFixed(2);
@@ -869,7 +973,7 @@ function openAdd(){ editId=null; clearForm(); $('saveBtn').textContent='SAVE TRI
 
 function clearForm(){
   // Clear all standard fields
-  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
+  ['date','meter','dest','km','extrakm','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
     var el = $('f-'+k);
     if(el){ el.value=''; el.classList.remove('err'); }
   });
@@ -908,6 +1012,9 @@ function clearE(k){ $('e-'+k).style.display='none'; $('f-'+k).classList.remove('
 
 function calcPrev(){
   var km = n($('f-km').value);
+  var ekEl = $('f-extrakm');
+  var extrakm = ekEl ? n(ekEl.value) : 0;
+  var totalKm = km + extrakm;
   var rate = n($('f-rate').value);
   var toll = n($('f-toll').value);
   var faEl = $('f-fixedAmount');
@@ -915,7 +1022,7 @@ function calcPrev(){
   var dr = n($('f-driver').value);
   var fu = n($('f-fuel').value);
   var ot = n($('f-other').value);
-  var any = km||rate||toll||fixed||dr||fu||ot;
+  var any = km||rate||toll||fixed||dr||fu||ot||extrakm;
   var box = $('calcBox');
   if(!any){ if(box) box.style.display='none'; return; }
   if(box) box.style.display='block';
@@ -930,9 +1037,12 @@ function calcPrev(){
   var ptEl = $('pv-total');
   var peEl = $('pv-exp');
   var piEl = $('pv-inhand');
+  var pkmEl = $('pv-totalkm');
   if(ptEl) ptEl.textContent='₹'+total.toFixed(2);
   if(peEl) peEl.textContent='₹'+exp.toFixed(2);
   if(piEl) piEl.textContent='₹'+ih.toFixed(2);
+  if(pkmEl && extrakm>0) pkmEl.textContent='TOTAL KM: '+km+' + '+extrakm+' = '+totalKm+' km';
+  else if(pkmEl) pkmEl.textContent='';
 }
 
 function setFareMode(mode){
@@ -1007,11 +1117,13 @@ function validate(){
 function saveTrip(){
   if(!validate()) return;
   var faEl = $('f-fixedAmount');
+  var ekEl2 = $('f-extrakm');
   var data = {
     date: $('f-date').value,
     meter: $('f-meter').value,
     dest: $('f-dest').value.toUpperCase(),
     km: $('f-km').value,
+    extrakm: ekEl2 ? ekEl2.value : '',
     rate: $('f-rate').value,
     toll: $('f-toll').value,
     driver: $('f-driver').value,
@@ -1046,7 +1158,8 @@ function openDetail(id){
   $('d-sl').textContent = '#'+t.sl;
   $('d-dt').textContent = t.date;
   $('d-dest').textContent = t.dest;
-  $('d-meta').textContent = 'METER: '+t.meter+' KM  |  DISTANCE: '+t.km+' KM';
+  var totalTripKm = n(t.km) + n(t.extrakm);
+  $('d-meta').textContent = 'METER: '+t.meter+' KM  |  TRIP: '+t.km+' KM'+(n(t.extrakm)>0?' + EXTRA: '+t.extrakm+' KM = '+totalTripKm+' KM TOTAL':'');
 
   // Fare type display
   var fareTypeEl = $('d-faretype');
@@ -1088,7 +1201,7 @@ function editTrip(id){
   if(!t) return;
   editId = id;
   // Fill all fields safely
-  ['date','meter','dest','km','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
+  ['date','meter','dest','km','extrakm','rate','toll','driver','fuel','other','remarks'].forEach(function(k){
     var el = $('f-'+k);
     if(el) el.value = t[k] || '';
   });
@@ -1662,6 +1775,93 @@ window.addEventListener('popstate', function(e) {
   showExitModal();
 });
 
+
+// ── DARK / LIGHT MODE ─────────────────────────────────────────
+function toggleDarkMode(){
+  var body = document.body;
+  var btn = document.getElementById('darkModeBtn');
+  body.classList.toggle('light-mode');
+  var isLight = body.classList.contains('light-mode');
+  localStorage.setItem('ctr_theme', isLight ? 'light' : 'dark');
+  if(btn) btn.textContent = isLight ? '\u2600' : '\u263D';
+}
+
+function loadTheme(){
+  var saved = localStorage.getItem('ctr_theme');
+  var btn = document.getElementById('darkModeBtn');
+  if(saved === 'light'){
+    document.body.classList.add('light-mode');
+    if(btn) btn.textContent = '\u2600';
+  } else {
+    document.body.classList.remove('light-mode');
+    if(btn) btn.textContent = '\u263D';
+  }
+}
+
+// ── CALCULATOR ────────────────────────────────────────────────
+var calcExprStr = '';
+var calcHasResult = false;
+
+function openCalculator(){
+  calcExprStr = '';
+  calcHasResult = false;
+  var cr = document.getElementById('calcResult');
+  var ce = document.getElementById('calcExpr');
+  if(cr) cr.textContent = '0';
+  if(ce) ce.textContent = '';
+  document.getElementById('calcScreen').classList.remove('hidden');
+}
+
+function closeCalculator(){
+  document.getElementById('calcScreen').classList.add('hidden');
+}
+
+function calcAction(key){
+  var resultEl = document.getElementById('calcResult');
+  var exprEl = document.getElementById('calcExpr');
+  if(!resultEl||!exprEl) return;
+  var ops = ['+','-','*','/','%'];
+  var isOp = ops.indexOf(key) !== -1;
+
+  if(key==='C'){
+    calcExprStr=''; calcHasResult=false;
+    resultEl.textContent='0'; exprEl.textContent=''; return;
+  }
+  if(key==='DEL'){
+    if(calcHasResult){ calcExprStr=''; calcHasResult=false; resultEl.textContent='0'; exprEl.textContent=''; }
+    else { calcExprStr=calcExprStr.slice(0,-1); resultEl.textContent=calcExprStr||'0'; }
+    return;
+  }
+  if(key==='='){
+    if(!calcExprStr) return;
+    try {
+      var expr = calcExprStr.split('%').join('/100');
+      var result = (new Function('return ('+expr+')'))();
+      exprEl.textContent = calcExprStr+' =';
+      var rounded = Math.round(result*100000)/100000;
+      resultEl.textContent = ''+rounded;
+      calcExprStr = ''+rounded;
+      calcHasResult = true;
+    } catch(e){
+      resultEl.textContent='ERROR'; calcExprStr=''; calcHasResult=false;
+    }
+    return;
+  }
+  if(calcHasResult && !isOp){ calcExprStr=''; calcHasResult=false; exprEl.textContent=''; }
+  if(calcHasResult && isOp){ calcHasResult=false; exprEl.textContent=''; }
+  if(isOp && calcExprStr){
+    var last=calcExprStr.slice(-1);
+    if(ops.indexOf(last)!==-1) calcExprStr=calcExprStr.slice(0,-1);
+  }
+  if(isOp && !calcExprStr && key!=='-') return;
+  var parts = calcExprStr.split(/[\+\-\*\/]/);
+  if(key==='.' && parts[parts.length-1].indexOf('.')!==-1) return;
+  calcExprStr += key;
+  resultEl.textContent = calcExprStr;
+  exprEl.textContent = '';
+}
+
+loadTheme();
 initCars();
 initPinScreen();
 renderList();
