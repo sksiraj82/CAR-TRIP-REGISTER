@@ -537,7 +537,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.7);}
       <div class="header-title" id="headerTitle">CAR TRIP REGISTER</div>
     </div>
     <div class="header-right" id="headerRight">
-      <div class="hstat-label">TOTAL TRIPS</div>
+      <div class="hstat-label" id="tripCountLabel">JUNE TRIPS</div>
       <div class="hstat-val" id="tripCount">0</div>
     </div>
   </div>
@@ -907,7 +907,9 @@ function renderList(){
     const sMatch=!q||t.dest.toLowerCase().includes(q)||(t.remarks&&t.remarks.toLowerCase().includes(q));
     return mMatch&&sMatch;
   });
-  $('tripCount').textContent=trips.length;
+  // Show MONTHLY trip count in header
+  $('tripCount').textContent = filtered.length;
+  $('tripCountLabel').textContent = MONTHS[viewMonth].substring(0,3) + ' ' + viewYear + ' TRIPS';
   const km=filtered.reduce((s,t)=>s+n(t.km)+n(t.extrakm),0);
   const fuel=filtered.reduce((s,t)=>s+n(t.fuel),0);
   const toll=filtered.reduce((s,t)=>s+n(t.toll),0);
@@ -921,24 +923,30 @@ function renderList(){
     list.innerHTML=`<div class="empty"><div class="empty-icon">${q?'🔍':'🚗'}</div><div class="empty-title">${q?'NO MATCHING TRIPS':'NO TRIPS THIS MONTH'}</div><div class="empty-sub">${q?'Try a different search':'Tap + to add your first trip'}</div></div>`;
     return;
   }
-  list.innerHTML=filtered.sort((a,b)=>a.sl-b.sl).map(t=>`
-    <div class="trip-card" onclick="openDetail(${t.id})">
-      <div class="trip-card-top">
-        <div class="trip-card-left">
-          <div class="trip-meta"><span class="sl-badge">#${t.sl}</span><span class="trip-date">${t.date}</span></div>
-          <div class="trip-dest">${t.dest}</div>
-          <div class="chip-row">
-            <span class="chip purple">${t.km} km</span>
-            <span class="chip orange">${rs(t.fuel)}</span>
-            <span class="chip green">${rs(calcInHand(t))}</span>
-          </div>
-        </div>
-        <div class="card-actions">
-          <button class="icon-btn" style="background:rgba(124,58,237,0.2)" onclick="event.stopPropagation();editTrip(${t.id})">✏️</button>
-          <button class="icon-btn" style="background:rgba(239,68,68,0.15)" onclick="event.stopPropagation();askDelById(${t.id})">🗑️</button>
-        </div>
-      </div>
-    </div>`).join('');
+  list.innerHTML=filtered.sort((a,b)=>a.sl-b.sl).map(function(t){
+    var totalKm = n(t.km) + n(t.extrakm);
+    var extraTag = n(t.extrakm)>0 ? ' <span style="font-size:9px;color:#00C2CB;">(+'+t.extrakm+' extra)</span>' : '';
+    var fareTag = t.fareMode==='fixed'
+      ? '<span class="chip" style="background:rgba(0,194,203,0.12);border-color:rgba(0,194,203,0.3);color:#00C2CB;font-size:10px;">FIXED</span>'
+      : '<span class="chip" style="background:rgba(212,160,23,0.12);border-color:rgba(212,160,23,0.3);color:#D4A017;font-size:10px;">PER KM</span>';
+    return '<div class="trip-card" onclick="openDetail('+t.id+')">' +
+      '<div class="trip-card-top">' +
+        '<div class="trip-card-left">' +
+          '<div class="trip-meta"><span class="sl-badge">#'+t.sl+'</span><span class="trip-date">'+t.date+'</span></div>' +
+          '<div class="trip-dest">'+t.dest+'</div>' +
+          '<div class="chip-row">' +
+            '<span class="chip purple">'+totalKm.toFixed(0)+' KM'+extraTag+'</span>' +
+            fareTag +
+            '<span class="chip green">'+rs(calcInHand(t))+'</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card-actions">' +
+          '<button class="icon-btn" style="background:rgba(212,160,23,0.2);color:#D4A017;font-size:13px;font-weight:800;" onclick="event.stopPropagation();editTrip('+t.id+')">✎</button>' +
+          '<button class="icon-btn" style="background:rgba(224,82,82,0.15);color:#E05252;font-size:15px;" onclick="event.stopPropagation();askDelById('+t.id+')">&#x2715;</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ── MONTHLY SUMMARY ───────────────────────────────────────────
@@ -950,10 +958,15 @@ function renderMonthly(){
     const mTrips=yearTrips.filter(t=>new Date(t.date).getMonth()===m);
     const km=mTrips.reduce((s,t)=>s+n(t.km)+n(t.extrakm),0);
     const hasDat=mTrips.length>0;
-    html+=`<div class="month-tile${hasDat?' has-data':''}" onclick="jumpToMonth(${m})">
-      <div class="month-tile-name">${MONTHS_SHORT[m]}</div>
-      ${hasDat?`<div class="month-tile-count">${mTrips.length} TRIP${mTrips.length>1?'S':''}</div><div class="month-tile-km">${km.toFixed(0)} km</div>`:`<div class="month-tile-empty">NO DATA</div>`}
-    </div>`;
+    var totalAmt = mTrips.reduce(function(s,t){ return s+calcInHand(t); }, 0);
+    html+='<div class="month-tile'+(hasDat?' has-data':'')+'" onclick="jumpToMonth('+m+')">' +
+      '<div class="month-tile-name">'+MONTHS_SHORT[m]+'</div>' +
+      (hasDat
+        ? '<div class="month-tile-count">'+mTrips.length+' TRIP'+(mTrips.length>1?'S':'')+'</div>' +
+          '<div class="month-tile-km">'+km.toFixed(0)+' KM</div>' +
+          '<div style="font-size:10px;color:#00B67A;font-weight:700;margin-top:2px;">'+rs(totalAmt)+'</div>'
+        : '<div class="month-tile-empty">NO DATA</div>') +
+    '</div>';
   }
   $('monthGrid').innerHTML=html;
   $('yt-trips').textContent=yearTrips.length;
