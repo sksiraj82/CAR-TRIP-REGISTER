@@ -923,7 +923,9 @@ function renderList(){
     list.innerHTML=`<div class="empty"><div class="empty-icon">${q?'🔍':'🚗'}</div><div class="empty-title">${q?'NO MATCHING TRIPS':'NO TRIPS THIS MONTH'}</div><div class="empty-sub">${q?'Try a different search':'Tap + to add your first trip'}</div></div>`;
     return;
   }
-  list.innerHTML=filtered.sort((a,b)=>a.sl-b.sl).map(function(t){
+  list.innerHTML=filtered.sort(function(a,b){
+    return (a.globalId||a.id)-(b.globalId||b.id);
+  }).map(function(t){
     var totalKm = n(t.km) + n(t.extrakm);
     var extraTag = n(t.extrakm)>0 ? ' <span style="font-size:9px;color:#00C2CB;">(+'+t.extrakm+' extra)</span>' : '';
     var fareTag = t.fareMode==='fixed'
@@ -1113,7 +1115,7 @@ function validate(){
       ok = false;
     } else if(!isNaN(newMeter) && trips.length > 0){
       var otherTrips = trips.slice();
-      otherTrips.sort(function(a,b){ return b.sl - a.sl; });
+      otherTrips.sort(function(a,b){ return (b.globalId||b.id)-(a.globalId||a.id); });
       var lastMeter = parseFloat(otherTrips[0].meter);
       if(!isNaN(lastMeter) && newMeter < lastMeter){
         $('e-meter').textContent='⚠ LAST ENTRY METER: '+lastMeter+' KM — নতুন মিটার বেশি হতে হবে';
@@ -1151,7 +1153,16 @@ function saveTrip(){
     if(idx !== -1) trips[idx] = Object.assign({}, trips[idx], data);
     toast('TRIP UPDATED');
   } else {
-    trips.push(Object.assign({ id: Date.now(), sl: sl++ }, data));
+    // Monthly serial: count existing trips in same month
+    var tripDate = new Date(data.date);
+    var tripMonth = tripDate.getMonth();
+    var tripYear = tripDate.getFullYear();
+    var monthTrips = trips.filter(function(t){
+      var d = new Date(t.date);
+      return d.getMonth()===tripMonth && d.getFullYear()===tripYear;
+    });
+    var monthSl = monthTrips.length + 1;
+    trips.push(Object.assign({ id: Date.now(), sl: monthSl, globalId: sl++ }, data));
     toast('TRIP SAVED');
     var d = new Date(data.date);
     viewMonth = d.getMonth();
@@ -1168,7 +1179,9 @@ function openDetail(id){
   detId = id;
   var t = trips.find(function(x){ return x.id === id; });
   if(!t) return;
-  $('d-sl').textContent = '#'+t.sl;
+  var detDate = new Date(t.date);
+  var detMonthName = MONTHS[detDate.getMonth()].substring(0,3);
+  $('d-sl').textContent = '#'+t.sl+' ('+detMonthName+')';
   $('d-dt').textContent = t.date;
   $('d-dest').textContent = t.dest;
   var totalTripKm = n(t.km) + n(t.extrakm);
@@ -1263,11 +1276,39 @@ function closeDeleteModal(){
   $('deleteModal').classList.add('hidden');
   delId = null;
 }
+function renumberAfterLoad(){
+  // Silently renumber all trips by month without persisting (called on load)
+  var groups = {};
+  trips.forEach(function(t){
+    var d = new Date(t.date);
+    var key = d.getFullYear()+'-'+(d.getMonth()+1);
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(t);
+  });
+  Object.keys(groups).forEach(function(key){
+    groups[key].sort(function(a,b){
+      return (a.globalId||a.id)-(b.globalId||b.id);
+    });
+    groups[key].forEach(function(t,i){ t.sl=i+1; });
+  });
+}
+
 function renumberTrips(){
-  // Keep existing order (by sl), just renumber 1,2,3...
-  trips.sort((a,b)=>a.sl-b.sl);
-  trips.forEach(function(t,i){ t.sl = i+1; });
-  // Next new trip sl = total + 1
+  // Group trips by month+year and renumber within each group
+  var groups = {};
+  trips.forEach(function(t){
+    var d = new Date(t.date);
+    var key = d.getFullYear()+'-'+(d.getMonth()+1);
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+  // Sort each group by globalId (entry order) and renumber
+  Object.keys(groups).forEach(function(key){
+    groups[key].sort(function(a,b){
+      return (a.globalId||a.id) - (b.globalId||b.id);
+    });
+    groups[key].forEach(function(t, i){ t.sl = i+1; });
+  });
   sl = trips.length + 1;
   persist();
 }
@@ -1569,6 +1610,12 @@ function loadActiveCar() {
   if (!car) return;
   trips = car.trips || [];
   sl = car.sl || 1;
+  // Assign globalId to old trips that don't have it (migration)
+  trips.forEach(function(t, i){
+    if(!t.globalId) t.globalId = t.id || (Date.now() + i);
+  });
+  // Re-run monthly renumber for existing data
+  renumberAfterLoad();
   // Update car profile card display
   $('disp-company').textContent = (car.company || 'YOUR CAR').toUpperCase();
   $('disp-model').textContent = (car.model || 'TAP EDIT TO SET').toUpperCase();
