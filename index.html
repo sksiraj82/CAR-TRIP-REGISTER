@@ -923,8 +923,11 @@ function renderList(){
     list.innerHTML=`<div class="empty"><div class="empty-icon">${q?'🔍':'🚗'}</div><div class="empty-title">${q?'NO MATCHING TRIPS':'NO TRIPS THIS MONTH'}</div><div class="empty-sub">${q?'Try a different search':'Tap + to add your first trip'}</div></div>`;
     return;
   }
+  // Sort by entry order — যেটা আগে enter হয়েছে সেটা আগে
   list.innerHTML=filtered.sort(function(a,b){
-    return (a.globalId||a.id)-(b.globalId||b.id);
+    var ao = a.entryOrder||a.globalId||a.id;
+    var bo = b.entryOrder||b.globalId||b.id;
+    return ao - bo;
   }).map(function(t){
     var totalKm = n(t.km) + n(t.extrakm);
     var extraTag = n(t.extrakm)>0 ? ' <span style="font-size:9px;color:#00C2CB;">(+'+t.extrakm+' extra)</span>' : '';
@@ -1115,7 +1118,12 @@ function validate(){
       ok = false;
     } else if(!isNaN(newMeter) && trips.length > 0){
       var otherTrips = trips.slice();
-      otherTrips.sort(function(a,b){ return (b.globalId||b.id)-(a.globalId||a.id); });
+      // Sort by entry order to find the most recently entered trip
+      otherTrips.sort(function(a,b){
+        var ao=a.entryOrder||a.globalId||a.id;
+        var bo=b.entryOrder||b.globalId||b.id;
+        return bo-ao;
+      });
       var lastMeter = parseFloat(otherTrips[0].meter);
       if(!isNaN(lastMeter) && newMeter < lastMeter){
         $('e-meter').textContent='⚠ LAST ENTRY METER: '+lastMeter+' KM — নতুন মিটার বেশি হতে হবে';
@@ -1153,16 +1161,22 @@ function saveTrip(){
     if(idx !== -1) trips[idx] = Object.assign({}, trips[idx], data);
     toast('TRIP UPDATED');
   } else {
-    // Monthly serial: count existing trips in same month
+    // Entry order based monthly serial
+    var entryId = Date.now(); // unique entry timestamp
     var tripDate = new Date(data.date);
     var tripMonth = tripDate.getMonth();
     var tripYear = tripDate.getFullYear();
-    var monthTrips = trips.filter(function(t){
+    // Count existing trips in same month for serial
+    var sameMonthTrips = trips.filter(function(t){
       var d = new Date(t.date);
       return d.getMonth()===tripMonth && d.getFullYear()===tripYear;
     });
-    var monthSl = monthTrips.length + 1;
-    trips.push(Object.assign({ id: Date.now(), sl: monthSl, globalId: sl++ }, data));
+    var monthSl = sameMonthTrips.length + 1;
+    trips.push(Object.assign({
+      id: entryId,
+      entryOrder: sl++,  // global entry order for sorting
+      sl: monthSl        // monthly serial
+    }, data));
     toast('TRIP SAVED');
     var d = new Date(data.date);
     viewMonth = d.getMonth();
@@ -1277,7 +1291,7 @@ function closeDeleteModal(){
   delId = null;
 }
 function renumberAfterLoad(){
-  // Silently renumber all trips by month without persisting (called on load)
+  // On load: renumber by entryOrder within each month (no persist)
   var groups = {};
   trips.forEach(function(t){
     var d = new Date(t.date);
@@ -1287,29 +1301,33 @@ function renumberAfterLoad(){
   });
   Object.keys(groups).forEach(function(key){
     groups[key].sort(function(a,b){
-      return (a.globalId||a.id)-(b.globalId||b.id);
+      var ao = a.entryOrder||a.globalId||a.id;
+      var bo = b.entryOrder||b.globalId||b.id;
+      return ao - bo;
     });
     groups[key].forEach(function(t,i){ t.sl=i+1; });
   });
 }
 
 function renumberTrips(){
-  // Group trips by month+year and renumber within each group
+  // Group by month+year, sort by entryOrder (entry time), renumber sl
   var groups = {};
   trips.forEach(function(t){
     var d = new Date(t.date);
     var key = d.getFullYear()+'-'+(d.getMonth()+1);
-    if(!groups[key]) groups[key] = [];
+    if(!groups[key]) groups[key]=[];
     groups[key].push(t);
   });
-  // Sort each group by globalId (entry order) and renumber
   Object.keys(groups).forEach(function(key){
+    // Sort by entry order (when it was entered, not trip date)
     groups[key].sort(function(a,b){
-      return (a.globalId||a.id) - (b.globalId||b.id);
+      var ao = a.entryOrder||a.globalId||a.id;
+      var bo = b.entryOrder||b.globalId||b.id;
+      return ao - bo;
     });
-    groups[key].forEach(function(t, i){ t.sl = i+1; });
+    // Renumber 1,2,3...
+    groups[key].forEach(function(t,i){ t.sl = i+1; });
   });
-  sl = trips.length + 1;
   persist();
 }
 
@@ -1610,11 +1628,14 @@ function loadActiveCar() {
   if (!car) return;
   trips = car.trips || [];
   sl = car.sl || 1;
-  // Assign globalId to old trips that don't have it (migration)
+  // Migrate old trips: assign entryOrder if missing
   trips.forEach(function(t, i){
-    if(!t.globalId) t.globalId = t.id || (Date.now() + i);
+    if(!t.entryOrder){
+      // Use id (timestamp) as entryOrder for old trips
+      t.entryOrder = t.id || t.globalId || (Date.now() + i);
+    }
   });
-  // Re-run monthly renumber for existing data
+  // Re-run monthly renumber based on entry order
   renumberAfterLoad();
   // Update car profile card display
   $('disp-company').textContent = (car.company || 'YOUR CAR').toUpperCase();
